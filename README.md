@@ -4,7 +4,28 @@ Real-time multiplayer arena games sharing one **play-credit** economy.
 
 > **Play credits only. No real money.** There are no deposits, withdrawals, crypto or paid entry in this codebase.
 
-Players spawn with 1 play credit at stake, take 80% of the stake of every player they eliminate (20% goes to the house pot), and can cash out at any time by holding a button for 3 seconds (they are vulnerable while holding).
+## ▶ Play now
+
+**https://meddeb147.github.io/arena/**
+
+Works in any modern browser on desktop and phone. The current build is **Blob Stake** against bots; the game runs entirely in your browser (online multiplayer arrives in step 2).
+
+### How to play
+- You start with **10 play credits**. Each life puts **1 credit** at stake.
+- Eat pellets to grow. Eat cells that are clearly smaller than you and you take **80% of their stake** (20% goes to the house pot).
+- **Green spike traps** pop cells bigger than them. Small cells can hide underneath.
+- **Hold cash-out for 3 seconds** to bank your stake into your wallet. You move slower and can be eaten while holding.
+- For 2.5 s after spawning you are protected (your cell blinks).
+- Out of credits? The death screen offers a free refill. They are play credits.
+
+| | Desktop | Phone |
+|---|---|---|
+| Steer | Mouse (distance from centre = speed) or WASD / arrows | Put your thumb anywhere: floating joystick |
+| Dash (costs a little mass) | **Space** | Dash button |
+| Shield (2 s, can't be eaten) | **E** or **Shift** | Shield button |
+| Cash out | Hold **Q** | Hold the Cash-out button |
+
+Languages: English, Français, العربية (RTL), chosen on the menu.
 
 ## Status
 
@@ -43,6 +64,10 @@ npm run check          # typecheck + tests (incl. credit-conservation fuzz test)
 npm run bench -- 10    # 10 rooms x 20 bots, reports CPU per 30 Hz tick
 ```
 
+```bash
+npm run build:single -w @arena/client   # the whole game as one self-contained HTML file
+```
+
 `docker compose up` arrives in step 8.
 
 ### Controls
@@ -77,4 +102,9 @@ All amounts are integer units (`1 credit = 100 units`). The ledger is double-ent
 5. Add tests – copy the conservation fuzz test with your module.
 
 ## Deployment
-Docker Compose (app, PostgreSQL, Redis, Caddy for HTTPS) comes in step 8.
+
+**Play link (GitHub Pages).** `.github/workflows/pages.yml` builds the client and publishes it on every push to `main` or the development branch. One-time setup: repo **Settings → Pages → Build and deployment → Source: GitHub Actions**, then re-run the "Deploy game to GitHub Pages" workflow from the Actions tab.
+
+**CI.** `.github/workflows/ci.yml` runs typecheck, all tests (including the credit-conservation fuzz test) and a 200-bot benchmark on every push.
+
+**Full server.** Docker Compose (game server, PostgreSQL, Redis, Caddy for HTTPS) comes in step 8.

@@ -1,0 +1,48 @@
+name: Deploy game to GitHub Pages
+
+# Publishes the playable client (engine runs in the browser, bots only) to
+# https://<owner>.github.io/<repo>/ . One-time setup: repo Settings -> Pages ->
+# Source: "GitHub Actions".
+on:
+  push:
+    branches: [main, claude/cool-fermat-w9wntw]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - name: Build client
+        run: npm run build
+        env:
+          BASE_PATH: /${{ github.event.repository.name }}/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: packages/client/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
