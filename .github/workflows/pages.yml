@@ -1,15 +1,18 @@
 name: Deploy game to GitHub Pages
 
-# Publishes the playable client (engine runs in the browser, bots only) to
-# https://<owner>.github.io/<repo>/ . One-time setup: repo Settings -> Pages ->
-# Source: "GitHub Actions".
+# Builds the playable client (engine runs in the browser, bots only) and
+# publishes it two ways, so either Pages setting works:
+#   1. pushes the built site to the `gh-pages` branch
+#      (Settings -> Pages -> Source: "Deploy from a branch" -> gh-pages / root)
+#   2. deploys it with GitHub Actions (Settings -> Pages -> Source: "GitHub Actions")
+# Live at https://<owner>.github.io/<repo>/
 on:
   push:
     branches: [main, claude/cool-fermat-w9wntw]
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -32,7 +35,22 @@ jobs:
         run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
-      - uses: actions/configure-pages@v5
+      - name: Prepare static site
+        run: |
+          cd packages/client/dist
+          find . -name '*.map' -delete
+          touch .nojekyll
+          cp index.html 404.html
+      - name: Publish to gh-pages branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd packages/client/dist
+          git init -q -b gh-pages
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -q -m "Deploy ${GITHUB_SHA}"
+          git push -f -q "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
       - uses: actions/upload-pages-artifact@v3
         with:
           path: packages/client/dist
@@ -40,6 +58,8 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # Only succeeds when Pages source is "GitHub Actions"; branch mode is served from gh-pages instead.
+    continue-on-error: true
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

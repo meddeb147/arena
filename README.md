@@ -103,7 +103,7 @@ All amounts are integer units (`1 credit = 100 units`). The ledger is double-ent
 
 ## Deployment
 
-**Play link (GitHub Pages).** `.github/workflows/pages.yml` builds the client and publishes it on every push to `main` or the development branch. One-time setup: repo **Settings → Pages → Build and deployment → Source: GitHub Actions**, then re-run the "Deploy game to GitHub Pages" workflow from the Actions tab.
+**Play link (GitHub Pages).** `.github/workflows/pages.yml` builds the client on every push to `main` or the development branch and publishes it to the `gh-pages` branch (and via GitHub Actions deployment). One-time setup: repo **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages`, folder `/ (root)` → Save**. The game appears at https://meddeb147.github.io/arena/ about a minute later.
 
 **CI.** `.github/workflows/ci.yml` runs typecheck, all tests (including the credit-conservation fuzz test) and a 200-bot benchmark on every push.
 
