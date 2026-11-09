@@ -1,0 +1,20 @@
+{
+  "name": "@arena/client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@arena/engine": "0.1.0",
+    "@arena/shared": "0.1.0",
+    "pixi.js": "^8.6.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

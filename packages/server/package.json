@@ -1,0 +1,19 @@
+{
+  "name": "@arena/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "bench": "tsx src/bench.ts",
+    "typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@arena/engine": "0.1.0",
+    "@arena/shared": "0.1.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.0"
+  }
+}
