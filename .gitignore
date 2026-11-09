@@ -6,3 +6,5 @@ coverage/
 .env.*
 !.env.example
 .DS_Store
+dist-single/
+stake-arena.html
