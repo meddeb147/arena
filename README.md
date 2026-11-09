@@ -1,12 +1,17 @@
 # Stake Arena
 
+[![Play now](https://img.shields.io/badge/%E2%96%B6%20PLAY%20NOW-meddeb147.github.io%2Farena-ff4f7b?style=for-the-badge)](https://meddeb147.github.io/arena/)
+[![CI](https://github.com/meddeb147/arena/actions/workflows/ci.yml/badge.svg)](https://github.com/meddeb147/arena/actions/workflows/ci.yml)
+
 Real-time multiplayer arena games sharing one **play-credit** economy.
 
 > **Play credits only. No real money.** There are no deposits, withdrawals, crypto or paid entry in this codebase.
 
 ## ▶ Play now
 
-**https://meddeb147.github.io/arena/**
+### 👉 [**https://meddeb147.github.io/arena/**](https://meddeb147.github.io/arena/)
+
+No download or sign-up: open the link, type a nickname, press **PLAY**.
 
 Works in any modern browser on desktop and phone. The current build is **Blob Stake** against bots; the game runs entirely in your browser (online multiplayer arrives in step 2).
 
@@ -103,7 +108,7 @@ All amounts are integer units (`1 credit = 100 units`). The ledger is double-ent
 
 ## Deployment
 
-**Play link (GitHub Pages).** `.github/workflows/pages.yml` builds the client on every push to `main` or the development branch and publishes it to the `gh-pages` branch (and via GitHub Actions deployment). One-time setup: repo **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages`, folder `/ (root)` → Save**. The game appears at https://meddeb147.github.io/arena/ about a minute later.
+**Play link (GitHub Pages).** `.github/workflows/pages.yml` builds the client on every push to `main` or the development branch and publishes it to the `gh-pages` branch (and via GitHub Actions deployment). One-time setup: repo **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages`, folder `/ (root)` → Save**. The game appears at [meddeb147.github.io/arena](https://meddeb147.github.io/arena/) about a minute later.
 
 **CI.** `.github/workflows/ci.yml` runs typecheck, all tests (including the credit-conservation fuzz test) and a 200-bot benchmark on every push.
 
