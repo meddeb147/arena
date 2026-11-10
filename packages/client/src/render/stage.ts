@@ -50,7 +50,8 @@ export class Stage {
       background: 0x171433,
       resolution: Math.min(window.devicePixelRatio || 1, 2),
       autoDensity: true,
-      preference: ['webgl', 'canvas'],
+      // `?renderer=canvas` forces the Canvas 2D fallback (broken WebGL drivers, video capture)
+      preference: new URLSearchParams(location.search).get('renderer') === 'canvas' ? 'canvas' : ['webgl', 'canvas'],
       powerPreference: 'high-performance',
     });
     host.appendChild(this.app.canvas);
