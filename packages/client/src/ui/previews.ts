@@ -1,4 +1,4 @@
-import { APOTHEM, ARENA_CX, ARENA_CY, BOMBER, BladeKind, BlobKind, BomberKind, CoilKind, GAMES, MemoryLedger, PotatoKind, Room, SUMO_CX, SUMO_CY, SumoKind, TankKind, VOLT, VoltKind } from '@arena/engine';
+import { APOTHEM, ARENA_CX, ARENA_CY, BOMBER, BlobKind, BomberKind, CoilKind, GAMES, MemoryLedger, PotatoKind, Room, VOLT, VoltKind } from '@arena/engine';
 import { TICK_MS, type EntitySnap, type GameId } from '@arena/shared';
 import { PELLET_COLORS } from '../render/color';
 import { settings } from '../settings';
@@ -50,64 +50,6 @@ const players = (ctx: CanvasRenderingContext2D, ents: EntitySnap[], kind: number
 };
 
 const DRAW: Partial<Record<GameId, { center: (ents: Iterable<Ent>) => [number, number]; span: number; draw: Draw }>> = {
-  tank: {
-    center: crowd(1400, 2800, 700),
-    span: 1500,
-    draw(ctx, ents, _w, _h, t) {
-      ctx.fillStyle = '#2b2216';
-      ctx.fillRect(0, 0, 2800, 2800);
-      for (const e of ents) {
-        if (e.k === TankKind.Crate) {
-          ctx.fillStyle = '#7a5a33';
-          ctx.fillRect(e.x - e.r * 0.8, e.y - e.r * 0.8, e.r * 1.6, e.r * 1.6);
-        } else if (e.k === TankKind.Mine) disc(ctx, e.x, e.y, e.r * 1.4, Math.sin(t * 8 + e.id) > 0 ? '#ff3d3d' : '#333');
-        else if (e.k === TankKind.Kit) disc(ctx, e.x, e.y, e.r * 1.4, '#3de0b0');
-        else if (e.k === TankKind.Shell) disc(ctx, e.x, e.y, 12, '#ffd84f');
-      }
-      for (const e of ents) {
-        if (e.k !== TankKind.Tank) continue;
-        ctx.save();
-        ctx.translate(e.x, e.y);
-        ctx.rotate(e.a ?? 0);
-        ctx.fillStyle = '#2a2a2a';
-        ctx.fillRect(-e.r * 1.6, -e.r * 1.5, e.r * 3.2, e.r * 3);
-        ctx.fillStyle = hex(e.c ?? 0xffb84f);
-        ctx.fillRect(-e.r * 1.3, -e.r * 0.9, e.r * 2.6, e.r * 1.8);
-        ctx.rotate((e.pts?.[0] ?? 0) - (e.a ?? 0));
-        ctx.fillRect(0, -7, e.r * 2.1, 14);
-        ctx.restore();
-      }
-    },
-  },
-  blade: {
-    center: crowd(1250, 2500, 650),
-    span: 1500,
-    draw(ctx, ents, _w, _h, t) {
-      ctx.fillStyle = '#1d1533';
-      ctx.fillRect(0, 0, 2500, 2500);
-      for (const e of ents) {
-        if (e.k === BladeKind.Lava) {
-          disc(ctx, e.x, e.y, e.r, '#c2341a');
-          disc(ctx, e.x, e.y, e.r * 0.7, `rgba(255,${120 + Math.round(40 * Math.sin(t * 3 + e.id))},61,1)`);
-        } else if (e.k === BladeKind.Orb) disc(ctx, e.x, e.y, 9, '#3de0b0');
-      }
-      for (const e of ents) {
-        if (e.k !== BladeKind.Spinner) continue;
-        const L = (e.h ?? 0.05) * 1000;
-        ctx.strokeStyle = '#f3efff';
-        ctx.lineWidth = 10;
-        ctx.lineCap = 'round';
-        for (const k of [0, Math.PI]) {
-          const a = (e.a ?? 0) + k;
-          ctx.beginPath();
-          ctx.moveTo(e.x + Math.cos(a) * e.r, e.y + Math.sin(a) * e.r);
-          ctx.lineTo(e.x + Math.cos(a) * (e.r + L), e.y + Math.sin(a) * (e.r + L));
-          ctx.stroke();
-        }
-        disc(ctx, e.x, e.y, e.r * 1.4, hex(e.c ?? 0xb07bff));
-      }
-    },
-  },
   bomber: {
     center: crowd(1050, 2100, 650),
     span: 1500,
@@ -204,49 +146,6 @@ const DRAW: Partial<Record<GameId, { center: (ents: Iterable<Ent>) => [number, n
         ctx.arc(e.x + Math.cos((e.a ?? 0) + 0.6) * e.r * 0.7, e.y + Math.sin((e.a ?? 0) + 0.6) * e.r * 0.7, e.r * 0.45, 0, Math.PI * 2);
         ctx.arc(e.x + Math.cos((e.a ?? 0) - 0.6) * e.r * 0.7, e.y + Math.sin((e.a ?? 0) - 0.6) * e.r * 0.7, e.r * 0.45, 0, Math.PI * 2);
         ctx.fill();
-      }
-    },
-  },
-  sumo: {
-    center: () => [SUMO_CX, SUMO_CY],
-    span: 2350,
-    draw(ctx, ents, _w, _h, t) {
-      ctx.fillStyle = '#050c1c';
-      ctx.fillRect(-500, -500, 3600, 3600);
-      for (const e of ents) {
-        if (e.k !== SumoKind.Platform) continue;
-        const danger = (e.p ?? 0) > 0.7;
-        ctx.fillStyle = '#1b3a6b';
-        ctx.beginPath();
-        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = danger ? `rgba(255,79,123,${0.6 + 0.4 * Math.sin(t * 10)})` : '#4fd2ff';
-        ctx.lineWidth = 22;
-        ctx.stroke();
-      }
-      for (const e of ents) {
-        if (e.k === SumoKind.Bumper) {
-          ctx.fillStyle = '#ffb84f';
-          ctx.beginPath();
-          ctx.arc(e.x, e.y, e.r * 1.2, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = '#2a1b52';
-          ctx.beginPath();
-          ctx.arc(e.x, e.y, e.r * 0.8, 0, Math.PI * 2);
-          ctx.fill();
-        } else if (e.k === SumoKind.Fighter) {
-          const r = e.r * 1.7 * (e.h ?? 1);
-          ctx.fillStyle = (e.f ?? 0) & 1 ? '#9aa3b5' : hex(e.c ?? 0x4fd2ff);
-          ctx.beginPath();
-          ctx.arc(e.x, e.y, r, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.fillStyle = 'rgba(0,0,0,.35)';
-          ctx.save();
-          ctx.translate(e.x, e.y);
-          ctx.rotate(e.a ?? 0);
-          ctx.fillRect(-r * 0.25, -r * 0.95, r * 0.5, r * 1.9);
-          ctx.restore();
-        }
       }
     },
   },
@@ -507,45 +406,6 @@ export function drawArt(canvas: HTMLCanvasElement, id: GameId, accent: string, b
         for (let i = 14; i >= 0; i--) dot(cx + ox + i * 9, cy + oy + Math.sin(i * 0.6 + ph) * 18, i === 0 ? 11 : 9, c);
       }
       for (let i = 0; i < 18; i++) dot((i * 53) % w, (i * 37) % h, 3, '#ffffff55');
-      break;
-    }
-    case 'tank': {
-      for (const [x, y, a, c] of [[cx - 70, cy + 10, -0.3, accent], [cx + 70, cy - 15, 2.6, '#4fd2ff']] as const) {
-        ctx.save();
-        ctx.translate(x, y);
-        ctx.rotate(a);
-        ctx.fillStyle = c;
-        ctx.fillRect(-20, -15, 40, 30);
-        ctx.fillRect(0, -4, 34, 8);
-        ctx.restore();
-      }
-      for (let i = 0; i < 4; i++) dot(cx - 30 + i * 18, cy + 2 - i * 5, 3.5, '#fff');
-      dot(cx, cy + 45, 9, '#ff4f7b');
-      break;
-    }
-    case 'sumo': {
-      dot(cx, cy, Math.min(w, h) * 0.38, '#ffffff14');
-      ctx.strokeStyle = accent;
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(cx, cy, Math.min(w, h) * 0.38, 0, Math.PI * 2);
-      ctx.stroke();
-      for (const [x, y, c] of [[-30, -10, '#ff4f7b'], [25, 15, '#ffb84f'], [5, -35, '#3de0b0'], [55, -20, '#b07bff']] as const) dot(cx + x, cy + y, 13, c);
-      break;
-    }
-    case 'blade': {
-      dot(cx, cy, 16, accent);
-      ctx.strokeStyle = '#f3efff';
-      ctx.lineWidth = 5;
-      for (const a of [0.4, 0.4 + Math.PI]) {
-        ctx.beginPath();
-        ctx.moveTo(cx + Math.cos(a) * 26, cy + Math.sin(a) * 26);
-        ctx.lineTo(cx + Math.cos(a) * 62, cy + Math.sin(a) * 62);
-        ctx.stroke();
-      }
-      ctx.fillStyle = '#ff6a3d55';
-      ctx.fillRect(0, h - 22, w, 22);
-      for (let i = 0; i < 7; i++) dot(30 + i * 40, 30 + ((i * 29) % (h - 70)), 5, '#3de0b0');
       break;
     }
     case 'bomber': {

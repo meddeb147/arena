@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Rng } from '@arena/shared';
-import { HOUSE, MINT, MemoryLedger, Room, SUMO, SUMO_CX, SUMO_CY, coilGame, platformAt, sumoGame, walletAcc, type Snake, type Wrestler } from '../src';
+import { HOUSE, MINT, MemoryLedger, Room, coilGame, walletAcc, type Snake } from '../src';
 import { assertLedgerInvariants } from './helpers';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -107,61 +107,6 @@ describe('Coil Stake', () => {
 
   it('conserves credits over a long chaotic session', () => {
     const r = fuzz(coilGame, 21);
-    expect(r.kills).toBeGreaterThan(20);
-    expect(r.byPlayer).toBeGreaterThan(5);
-  }, 60_000);
-});
-
-describe('Sumo Smash', () => {
-  it('the platform shrinks, holds, then snaps back', () => {
-    expect(platformAt(0).r).toBe(SUMO.maxRadius);
-    expect(platformAt(SUMO.shrinkTime + 1).r).toBe(SUMO.minRadius);
-    expect(platformAt(SUMO.shrinkTime + SUMO.holdTime + SUMO.snapTime - 1).r).toBeGreaterThan(SUMO.maxRadius * 0.95);
-  });
-
-  it('the last toucher gets the kill when you fall off', () => {
-    const { room, ledger, a, b } = duel<Wrestler>(sumoGame, 7);
-    const house0 = ledger.balance(HOUSE);
-    a.x = SUMO_CX;
-    a.y = SUMO_CY + 300;
-    b.x = SUMO_CX;
-    b.y = SUMO_CY + 300 + a.r + b.r - 4;
-    a.vy = 600; // a slams into b
-    room.step();
-    expect(b.lastHit?.by).toBe(a.id);
-    b.x = SUMO_CX;
-    b.y = SUMO_CY + 1200; // off the mat
-    for (let i = 0; i < 20; i++) room.step();
-    expect(b.alive).toBe(false);
-    expect(room.stakeOf(a)).toBe(180);
-    expect(ledger.balance(HOUSE) - house0).toBe(20);
-  });
-
-  it('falling with no recent touch pays the house', () => {
-    const { room, ledger, b } = duel<Wrestler>(sumoGame, 8);
-    const house0 = ledger.balance(HOUSE);
-    b.x = SUMO_CX + 1300;
-    for (let i = 0; i < 20; i++) room.step();
-    expect(b.alive).toBe(false);
-    expect(ledger.balance(HOUSE) - house0).toBe(100);
-  });
-
-  it('Heavy makes you hard to move', () => {
-    const { room, a, b } = duel<Wrestler>(sumoGame, 9);
-    room.setInput('b', { skill2: true });
-    room.step();
-    a.x = SUMO_CX;
-    a.y = SUMO_CY + 300;
-    b.x = SUMO_CX;
-    b.y = SUMO_CY + 300 + a.r + b.r - 4;
-    a.vy = 600;
-    b.vx = b.vy = 0;
-    room.step();
-    expect(Math.hypot(b.vx, b.vy)).toBeLessThan(400);
-  });
-
-  it('conserves credits over a long chaotic session', () => {
-    const r = fuzz(sumoGame, 31);
     expect(r.kills).toBeGreaterThan(20);
     expect(r.byPlayer).toBeGreaterThan(5);
   }, 60_000);

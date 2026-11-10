@@ -30,7 +30,7 @@ export interface BaseEntity {
   /** tick until which the entity is spawn-protected */
   protectedUntil: number;
   kills: number;
-  /** most recent contact by another entity (used e.g. for Sumo/Potato kill credit) */
+  /** most recent contact by another entity (used e.g. for Volt/Potato kill credit) */
   lastHit: { by: number; tick: number } | null;
 }
 

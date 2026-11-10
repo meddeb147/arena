@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CASHOUT_HOLD_TICKS, Rng } from '@arena/shared';
-import { BOMBER, HOUSE, MINT, MemoryLedger, POTATO, Room, bladeGame, blades, bomberGame, potatoGame, tankDamage, tankGame, walletAcc } from '../src';
+import { BOMBER, HOUSE, MINT, MemoryLedger, POTATO, Room, bomberGame, potatoGame, walletAcc } from '../src';
 import { assertLedgerInvariants } from './helpers';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -43,61 +43,6 @@ function fuzz(game: any, seed: number) {
   assertLedgerInvariants(ledger, room);
   return kills;
 }
-
-describe('Tank Duel', () => {
-  it('turrets auto-fire and a shell kill pays the shooter', () => {
-    const { room, ledger, ents } = duel(tankGame, 2);
-    const [a, b] = ents;
-    a.x = 1400; a.y = 1400; b.x = 1700; b.y = 1400;
-    (room.state as any).crates = [];
-    (room.state as any).mines = [];
-    b.hp = 10;
-    const house0 = ledger.balance(HOUSE);
-    for (let i = 0; i < 90 && b.alive; i++) {
-      room.setInput('a', { dx: 0, dy: 0 });
-      room.setInput('b', { dx: 0, dy: 0 });
-      room.step();
-    }
-    expect(b.alive).toBe(false);
-    expect(room.stakeOf(a)).toBe(180);
-    expect(ledger.balance(HOUSE) - house0).toBe(20);
-  });
-  it('shield blocks damage', () => {
-    const { room, ents } = duel(tankGame, 3);
-    const [a, b] = ents;
-    room.setInput('b', { skill2: true });
-    room.step();
-    tankDamage(room as any, b, 50, a, 1, 0, 0);
-    expect(b.hp).toBe(100);
-  });
-  it('conserves credits', () => expect(fuzz(tankGame, 41)).toBeGreaterThan(20), 60_000);
-});
-
-describe('Blade Spin', () => {
-  it('a blade through a body pays the blade owner', () => {
-    const { room, ents } = duel(bladeGame, 4);
-    const [a, b] = ents;
-    (room.state as any).lava = [];
-    a.x = 1200; a.y = 1200;
-    const tip = blades(a)[0]!;
-    b.x = (tip[0] + tip[2]) / 2;
-    b.y = (tip[1] + tip[3]) / 2;
-    room.step();
-    expect(b.alive).toBe(false);
-    expect(room.stakeOf(a)).toBe(180);
-  });
-  it('clashing blades knock both spinners back', () => {
-    const { room, ents } = duel(bladeGame, 5);
-    const [a, b] = ents;
-    (room.state as any).lava = [];
-    a.x = 1000; a.y = 1200; a.spinAngle = 0; a.spinDir = 1;
-    b.x = 1000 + 2 * (a.r + 4) + 60; b.y = 1200; b.spinAngle = Math.PI; b.spinDir = -1;
-    room.step();
-    expect(a.kvx).toBeLessThan(0);
-    expect(b.kvx).toBeGreaterThan(0);
-  });
-  it('conserves credits', () => expect(fuzz(bladeGame, 51)).toBeGreaterThan(20), 60_000);
-});
 
 describe('Bomber Blast', () => {
   it('a blast kills nearby players and pays the bomb owner; it hits the owner too', () => {

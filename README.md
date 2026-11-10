@@ -11,7 +11,7 @@ Real-time multiplayer arena games sharing one **play-credit** economy.
 
 ### 👉 [**https://meddeb147.github.io/arena/**](https://meddeb147.github.io/arena/)
 
-No download or sign-up: open the link, type a nickname, pick an arena. All **8 games** are playable: Coil Stake, Blob Stake, Volt Brawl, Tank Duel, Sumo Smash, Blade Spin, Bomber Blast and Hot Potato. Direct links open a game straight away: `…/arena/#volt`, `#blob`, `#coil`, `#sumo`, `#tank`, `#blade`, `#bomber`, `#potato`.
+No download or sign-up: open the link, type a nickname, pick an arena. **5 games** are playable: Coil Stake, Blob Stake, Volt Brawl, Bomber Blast and Hot Potato. Direct links open a game straight away: `…/arena/#volt`, `#blob`, `#coil`, `#bomber`, `#potato`.
 
 Works in any modern browser on desktop and phone. Everyone who opens the link plays in the **same arena** (the server fills each room with up to 20 players and tops it up with bots). If the game server is unreachable the page offers offline play against bots.
 
@@ -41,19 +41,6 @@ Works in any modern browser on desktop and phone. Everyone who opens the link pl
 - Your head steers, your body is a wall. A snake whose head hits your body is eliminated and you take 80% of its stake.
 - **Jump** flies over bodies for a moment (you can't eat while airborne). **Magnet** pulls food to you for 3 s.
 - Dead snakes burst into a trail of glowing food. Golden pellets are worth 6. Walls and spike traps kill.
-
-**Sumo Smash** (pinball sumo)
-- Bouncy wrestlers on a round mat that slowly shrinks, holds, then snaps back with a shockwave.
-- Push people off: whoever touched them last (within 4 s) gets the kill. Spinning bumpers in the middle launch you.
-- **Ram** charges forward and hits much harder. **Heavy** makes you nearly immovable for 2 s (but slow).
-
-**Tank Duel** (auto-fire tanks)
-- Your turret aims and fires at the nearest enemy by itself: you drive. Dodge shells, use crates as cover, grab repair kits.
-- Mines blink when armed. A mine blast (or a shell) that finishes someone you hit in the last 4 s still counts as your kill.
-
-**Blade Spin** (orbiting blades)
-- Two blades orbit you; every orb makes them longer (and you a bit slower). A blade through someone's body eliminates them.
-- Blades that clash spark, flip direction and knock both players back, sometimes into the lava (the last one who clashed with you gets the credit).
 
 **Bomber Blast** (timed bombs)
 - **Bomb** drops a 2-second bomb (up to 3 at once). Walk into a bomb to kick it; bombs set off nearby bombs in chains.
@@ -85,7 +72,7 @@ Languages: English, Français, العربية (RTL), chosen on the menu.
 | 1 | Monorepo, shared types, engine, one room, **Blob Stake** with bots, in-browser play | ✅ done |
 | 2 | WebSocket multiplayer, matchmaking, delta snapshots, interpolation | ✅ done (client-side prediction: later) |
 | 3 | PostgreSQL ledger, accounts (email/Google/guest), leaderboards | |
-| 4 | More games on the shared engine | ✅ all 8 games playable |
+| 4 | More games on the shared engine | ✅ 5 games playable (Tank Duel, Sumo Smash and Blade Spin were removed) |
 | 5 | Landing page, HUD polish, audio, settings, full i18n | landing page done (live game previews, how it works, fair play) |
 | 6 | Cosmetics, missions, prizes page, charity counter | |
 | 7 | Anti-cheat, 200-bot load tests, security review | |
