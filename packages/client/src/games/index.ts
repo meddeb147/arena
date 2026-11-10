@@ -5,6 +5,10 @@ import { BlobRenderer } from './blob/renderer';
 import { VoltRenderer } from './volt/renderer';
 import { CoilRenderer } from './coil/renderer';
 import { SumoRenderer } from './sumo/renderer';
+import { TankRenderer } from './tank/renderer';
+import { BladeRenderer } from './blade/renderer';
+import { BomberRenderer } from './bomber/renderer';
+import { PotatoRenderer } from './potato/renderer';
 
 export interface ClientGame {
   make: () => GameRenderer;
@@ -18,4 +22,8 @@ export const CLIENT_GAMES: Partial<Record<GameId, ClientGame>> = {
   volt: { make: () => new VoltRenderer(), texts: { killedBy: 'knockedOutBy', hazard: 'friedByArena', feedKill: 'koFeed', feedHazard: 'friedFeed' } },
   coil: { make: () => new CoilRenderer(), texts: { killedBy: 'coiledBy', hazard: 'wallOrTrap', feedKill: 'coilFeed', feedHazard: 'splatFeed' } },
   sumo: { make: () => new SumoRenderer(), texts: { killedBy: 'pushedOffBy', hazard: 'fellOff', feedKill: 'sumoFeed', feedHazard: 'fellFeed' } },
+  tank: { make: () => new TankRenderer(), texts: { killedBy: 'destroyedBy', hazard: 'mineHit', feedKill: 'tankFeed', feedHazard: 'mineFeed' } },
+  blade: { make: () => new BladeRenderer(), texts: { killedBy: 'slicedBy', hazard: 'lavaDeath', feedKill: 'bladeFeed', feedHazard: 'lavaFeed' } },
+  bomber: { make: () => new BomberRenderer(), texts: { killedBy: 'blownUpBy', hazard: 'blewSelf', feedKill: 'bomberFeed', feedHazard: 'boomFeed' } },
+  potato: { make: () => new PotatoRenderer(), texts: { killedBy: 'potatoFrom', hazard: 'potatoBoom', feedKill: 'potatoFeed', feedHazard: 'potatoSelfFeed' } },
 };

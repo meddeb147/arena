@@ -251,7 +251,7 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
         if (e.cooldowns[s] > 0) e.cooldowns[s]--;
         if (e.effects[s] > 0) e.effects[s]--;
       }
-      if (e.input.cashout) {
+      if (e.input.cashout && (this.game.canCashout?.(this, e) ?? true)) {
         if (e.cashoutTicks === 0) {
           e.effects = [0, 0];
           e.protectedUntil = 0;

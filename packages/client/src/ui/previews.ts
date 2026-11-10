@@ -1,4 +1,4 @@
-import { APOTHEM, ARENA_CX, ARENA_CY, BlobKind, CoilKind, GAMES, MemoryLedger, Room, SUMO_CX, SUMO_CY, SumoKind, VOLT, VoltKind } from '@arena/engine';
+import { APOTHEM, ARENA_CX, ARENA_CY, BOMBER, BladeKind, BlobKind, BomberKind, CoilKind, GAMES, MemoryLedger, PotatoKind, Room, SUMO_CX, SUMO_CY, SumoKind, TankKind, VOLT, VoltKind } from '@arena/engine';
 import { TICK_MS, type EntitySnap, type GameId } from '@arena/shared';
 import { PELLET_COLORS } from '../render/color';
 import { settings } from '../settings';
@@ -20,7 +20,137 @@ function octPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numbe
 }
 
 type Ent = { x: number; y: number; r: number; alive: boolean };
+/** Busiest spot: follow the average position of everyone alive (smoothed by the camera). */
+const crowd = (fallback: number, size: number, pad: number) => (ents: Iterable<Ent>): [number, number] => {
+  let x = 0;
+  let y = 0;
+  let n = 0;
+  for (const e of ents) {
+    if (!e.alive) continue;
+    x += e.x;
+    y += e.y;
+    n++;
+  }
+  const keep = (v: number) => Math.min(size - pad, Math.max(pad, v));
+  return n ? [keep(x / n), keep(y / n)] : [fallback, fallback];
+};
+const disc = (ctx: CanvasRenderingContext2D, x: number, y: number, r: number, fill: string) => {
+  ctx.fillStyle = fill;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+};
+const players = (ctx: CanvasRenderingContext2D, ents: EntitySnap[], kind: number, scale = 1.6) => {
+  for (const e of ents) {
+    if (e.k !== kind) continue;
+    disc(ctx, e.x + 5, e.y + 8, e.r * scale, 'rgba(0,0,0,.3)');
+    disc(ctx, e.x, e.y, e.r * scale, hex(e.c ?? 0xffffff));
+    disc(ctx, e.x + Math.cos(e.a ?? 0) * e.r * 0.7, e.y + Math.sin(e.a ?? 0) * e.r * 0.7, e.r * 0.35, '#fff');
+  }
+};
+
 const DRAW: Partial<Record<GameId, { center: (ents: Iterable<Ent>) => [number, number]; span: number; draw: Draw }>> = {
+  tank: {
+    center: crowd(1400, 2800, 700),
+    span: 1500,
+    draw(ctx, ents, _w, _h, t) {
+      ctx.fillStyle = '#2b2216';
+      ctx.fillRect(0, 0, 2800, 2800);
+      for (const e of ents) {
+        if (e.k === TankKind.Crate) {
+          ctx.fillStyle = '#7a5a33';
+          ctx.fillRect(e.x - e.r * 0.8, e.y - e.r * 0.8, e.r * 1.6, e.r * 1.6);
+        } else if (e.k === TankKind.Mine) disc(ctx, e.x, e.y, e.r * 1.4, Math.sin(t * 8 + e.id) > 0 ? '#ff3d3d' : '#333');
+        else if (e.k === TankKind.Kit) disc(ctx, e.x, e.y, e.r * 1.4, '#3de0b0');
+        else if (e.k === TankKind.Shell) disc(ctx, e.x, e.y, 12, '#ffd84f');
+      }
+      for (const e of ents) {
+        if (e.k !== TankKind.Tank) continue;
+        ctx.save();
+        ctx.translate(e.x, e.y);
+        ctx.rotate(e.a ?? 0);
+        ctx.fillStyle = '#2a2a2a';
+        ctx.fillRect(-e.r * 1.6, -e.r * 1.5, e.r * 3.2, e.r * 3);
+        ctx.fillStyle = hex(e.c ?? 0xffb84f);
+        ctx.fillRect(-e.r * 1.3, -e.r * 0.9, e.r * 2.6, e.r * 1.8);
+        ctx.rotate((e.pts?.[0] ?? 0) - (e.a ?? 0));
+        ctx.fillRect(0, -7, e.r * 2.1, 14);
+        ctx.restore();
+      }
+    },
+  },
+  blade: {
+    center: crowd(1250, 2500, 650),
+    span: 1500,
+    draw(ctx, ents, _w, _h, t) {
+      ctx.fillStyle = '#1d1533';
+      ctx.fillRect(0, 0, 2500, 2500);
+      for (const e of ents) {
+        if (e.k === BladeKind.Lava) {
+          disc(ctx, e.x, e.y, e.r, '#c2341a');
+          disc(ctx, e.x, e.y, e.r * 0.7, `rgba(255,${120 + Math.round(40 * Math.sin(t * 3 + e.id))},61,1)`);
+        } else if (e.k === BladeKind.Orb) disc(ctx, e.x, e.y, 9, '#3de0b0');
+      }
+      for (const e of ents) {
+        if (e.k !== BladeKind.Spinner) continue;
+        const L = (e.h ?? 0.05) * 1000;
+        ctx.strokeStyle = '#f3efff';
+        ctx.lineWidth = 10;
+        ctx.lineCap = 'round';
+        for (const k of [0, Math.PI]) {
+          const a = (e.a ?? 0) + k;
+          ctx.beginPath();
+          ctx.moveTo(e.x + Math.cos(a) * e.r, e.y + Math.sin(a) * e.r);
+          ctx.lineTo(e.x + Math.cos(a) * (e.r + L), e.y + Math.sin(a) * (e.r + L));
+          ctx.stroke();
+        }
+        disc(ctx, e.x, e.y, e.r * 1.4, hex(e.c ?? 0xb07bff));
+      }
+    },
+  },
+  bomber: {
+    center: crowd(1050, 2100, 650),
+    span: 1500,
+    draw(ctx, ents, _w, _h, t) {
+      for (let y = 0; y < 2100; y += 105) for (let x = 0; x < 2100; x += 105) {
+        ctx.fillStyle = (x + y) / 105 % 2 ? '#2e1a1a' : '#341e1d';
+        ctx.fillRect(x, y, 105, 105);
+      }
+      for (const e of ents) {
+        if (e.k === BomberKind.Pillar) disc(ctx, e.x, e.y, e.r, '#5b4a4a');
+        else if (e.k === BomberKind.SkyMark) {
+          ctx.strokeStyle = '#ff3d3d';
+          ctx.lineWidth = 8;
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (e.k === BomberKind.Bomb) {
+          disc(ctx, e.x, e.y, BOMBER.blast, `rgba(255,61,61,${0.05 + (1 - (e.h ?? 1)) * 0.15})`);
+          disc(ctx, e.x, e.y, e.r * 1.6, Math.sin(t * (6 + (1 - (e.h ?? 1)) * 20)) > 0.5 ? '#ff5050' : '#1b1430');
+        }
+      }
+      players(ctx, ents, BomberKind.Player);
+    },
+  },
+  potato: {
+    center: crowd(1200, 2400, 650),
+    span: 1500,
+    draw(ctx, ents, _w, _h, t) {
+      ctx.fillStyle = '#2d2614';
+      ctx.fillRect(0, 0, 2400, 2400);
+      for (const e of ents) if (e.k === PotatoKind.Pillar) disc(ctx, e.x, e.y, e.r, '#6b5a2e');
+      players(ctx, ents, PotatoKind.Player);
+      for (const e of ents) {
+        if (e.k !== PotatoKind.Potato) continue;
+        const heat = 1 - (e.h ?? 1);
+        disc(ctx, e.x, e.y - 60, 60 + heat * 40, `rgba(255,${Math.round(180 - heat * 120)},60,.35)`);
+        ctx.fillStyle = heat > 0.66 ? '#ff5030' : '#b5833f';
+        ctx.beginPath();
+        ctx.ellipse(e.x + Math.sin(t * 40) * heat * 4, e.y - 60, 34, 24, 0.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+  },
   coil: {
     center: (ents) => {
       let best: (Ent & { mass?: number }) | null = null;

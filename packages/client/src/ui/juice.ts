@@ -19,6 +19,19 @@ const FX_SOUND: Record<string, SoundName> = {
   bumper: 'bumper',
   fall: 'whoosh',
   snap: 'boom',
+  shot: 'shot',
+  ricochet: 'pop',
+  mine: 'boom',
+  clash: 'clang',
+  slice: 'smash',
+  lava: 'bruh',
+  drop: 'pop',
+  kick: 'punch',
+  land: 'punch',
+  blast: 'boom',
+  pass: 'boing',
+  assign: 'zap',
+  potato: 'boom',
 };
 
 const STREAK_KEYS: (keyof Dict)[] = ['streak2', 'streak3', 'streak4', 'streak5', 'streak6'];

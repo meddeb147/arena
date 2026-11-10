@@ -24,6 +24,8 @@ export type SoundName =
   | 'streak'
   | 'bumper'
   | 'golden'
+  | 'shot'
+  | 'clang'
   | 'click';
 
 let ctx: AudioContext | null = null;
@@ -31,7 +33,7 @@ let master: GainNode | null = null;
 let noiseBuf: AudioBuffer | null = null;
 const lastPlayed = new Map<SoundName, number>();
 /** minimum ms between two plays of the same sound, so crowds don't turn into noise */
-const THROTTLE: Partial<Record<SoundName, number>> = { punch: 70, pop: 60, bumper: 90, gulp: 80, tick: 200, golden: 120, zap: 80, boing: 60 };
+const THROTTLE: Partial<Record<SoundName, number>> = { shot: 60, clang: 90, punch: 70, pop: 60, bumper: 90, gulp: 80, tick: 200, golden: 120, zap: 80, boing: 60 };
 
 function ensure(): AudioContext | null {
   if (ctx) return ctx;
@@ -329,6 +331,27 @@ const PLAYERS: Record<SoundName, (out: Out, t: number) => void> = {
   },
   golden: (o, t) => chime(o, t, [1568, 2093], 0.05, 0.12),
   click: (o, t) => tick(o, t),
+  // laser pew: a fast downward square sweep
+  shot: (o, t) => {
+    const s = osc('square', 1400, t);
+    s.frequency.exponentialRampToValueAtTime(220, t + 0.12);
+    const g = gain(0.0001, t);
+    env(g, t, 0.16, 0.003, 0.1);
+    s.connect(filter('lowpass', 3000)).connect(g).connect(o);
+    s.start(t);
+    s.stop(t + 0.16);
+  },
+  // metal on metal: inharmonic partials ringing out
+  clang: (o, t) => {
+    for (const [f, v] of [[523, 0.2], [1307, 0.12], [2210, 0.08], [3150, 0.05]] as const) {
+      const s = osc('sine', f, t);
+      const g = gain(0.0001, t);
+      env(g, t, v, 0.002, 0.35);
+      s.connect(g).connect(o);
+      s.start(t);
+      s.stop(t + 0.45);
+    }
+  },
 };
 
 /** Play a sound. `vol` 0..1 (e.g. distance attenuation), `delay` in seconds. */

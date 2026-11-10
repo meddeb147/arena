@@ -104,6 +104,8 @@ export interface GameModule<E extends BaseEntity = BaseEntity, S = unknown, B = 
   step(sim: Sim<E, S>): void;
   /** Try to activate a skill. Return false to refuse (cooldown is then not consumed). */
   useSkill(sim: Sim<E, S>, e: E, slot: 0 | 1): boolean;
+  /** Return false to refuse cashing out right now (e.g. while holding a hot potato). */
+  canCashout?(sim: Sim<E, S>, e: E): boolean;
   /** Called when the cash-out hold starts: cancel protective effects etc. */
   onCashoutStart?(sim: Sim<E, S>, e: E): void;
   onDeath?(sim: Sim<E, S>, e: E, cause: DeathCause): void;
