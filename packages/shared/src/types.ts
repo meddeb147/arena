@@ -34,6 +34,8 @@ export const EntFlag = {
   Protected: 1 << 7,
   /** mid-attack animation (punch, swing…) */
   Attack: 1 << 8,
+  /** the room's King (biggest stake, carries a bounty) */
+  King: 1 << 9,
 } as const;
 
 /**
@@ -67,7 +69,8 @@ export interface EntitySnap {
 export type DeathCause = 'player' | 'hazard' | 'self' | 'disconnect';
 
 export type GameEvent =
-  | { t: 'kill'; killerId: number | null; killerName: string | null; victimId: number; victimName: string; amount: number; houseCut: number; cause: DeathCause; x: number; y: number }
+  | { t: 'kill'; killerId: number | null; killerName: string | null; victimId: number; victimName: string; amount: number; houseCut: number; cause: DeathCause; x: number; y: number; bounty?: number }
+  | { t: 'king'; id: number; name: string; stake: number; x: number; y: number }
   | { t: 'cashout'; id: number; name: string; amount: number; x: number; y: number }
   | { t: 'skill'; id: number; slot: 0 | 1; x: number; y: number }
   | { t: 'spawn'; id: number; name: string; x: number; y: number }
@@ -108,4 +111,15 @@ export interface Snapshot {
   you: SelfState;
   /** room population */
   pop: { humans: number; bots: number };
+  /** the current King, visible from anywhere in the room */
+  king: KingInfo | null;
+}
+
+export interface KingInfo {
+  id: number;
+  name: string;
+  x: number;
+  y: number;
+  stake: number;
+  bounty: number;
 }

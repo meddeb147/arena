@@ -7,6 +7,8 @@ export type AnyRoom = Room<any, any, any>;
 interface Slot {
   room: AnyRoom;
   game: GameId;
+  /** private room code (friends only), null for public rooms */
+  code: string | null;
   idleSince: number | null;
   /** events produced since the last snapshot flush */
   pending: GameEvent[];
@@ -40,22 +42,26 @@ export class RoomManager {
     return this.slots.get(roomId)?.room;
   }
 
-  /** Fullest room with space for one more human; opens a new one if needed. */
-  pick(game: GameId): AnyRoom {
+  /** Fullest public room with space; or the private room for `code` (created on first use). */
+  pick(game: GameId, code: string | null = null): AnyRoom {
+    if (code) {
+      for (const s of this.slots.values()) if (s.code === code && s.game === game) return s.room;
+      return this.open(game, code).room;
+    }
     let best: Slot | null = null;
     for (const s of this.slots.values()) {
-      if (s.game !== game || !s.room.hasSpaceForHuman()) continue;
+      if (s.game !== game || s.code !== null || !s.room.hasSpaceForHuman()) continue;
       if (!best || s.room.humanCount > best.room.humanCount) best = s;
     }
     return (best ?? this.open(game)).room;
   }
 
-  private open(game: GameId): Slot {
+  private open(game: GameId, code: string | null = null): Slot {
     const module = GAMES[game];
     if (!module) throw new Error(`unknown game ${game}`);
     const id = `${game}-${++this.seq}`;
     const room = new Room(module, { id, seed: (Date.now() ^ (this.seq * 0x9e3779b1)) >>> 0, ledger: this.ledger });
-    const slot: Slot = { room, game, idleSince: null, pending: [] };
+    const slot: Slot = { room, game, code, idleSince: null, pending: [] };
     this.slots.set(id, slot);
     return slot;
   }
@@ -70,7 +76,8 @@ export class RoomManager {
       if (s.room.isIdle) {
         s.idleSince ??= this.tick;
         const kept = warm.get(s.game) ?? 0;
-        if (kept < this.warmPerGame) warm.set(s.game, kept + 1);
+        // only public rooms are kept warm; idle private rooms close like any extra room
+        if (s.code === null && kept < this.warmPerGame) warm.set(s.game, kept + 1);
         else if (this.tick - s.idleSince > this.idleCloseTicks) {
           s.room.close();
           this.slots.delete(id);

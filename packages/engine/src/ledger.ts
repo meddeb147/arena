@@ -20,7 +20,8 @@ export type TransferReason =
   | 'hazard_loss' // stake(victim) -> house, died without a killer
   | 'cashout' // stake -> wallet
   | 'bot_fund' // house -> stake(bot)
-  | 'bot_refund'; // stake(bot) -> house (bot cashed out / despawned)
+  | 'bot_refund' // stake(bot) -> house (bot cashed out / despawned)
+  | 'bounty'; // house -> stake(killer), bonus for knocking out the King
 
 export interface Transfer {
   readonly seq: number;

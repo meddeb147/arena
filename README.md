@@ -55,6 +55,16 @@ Works in any modern browser on desktop and phone. Everyone who opens the link pl
 - 1 to 3 potatoes depending on how many play. Touch someone to pass yours; it explodes after 9 seconds.
 - If it explodes, the last player who passed it to the holder takes the holder's stake. You can't cash out while holding a potato. **Shield** blocks catching one.
 
+**The King and bounties (every game)**
+- The richest player in the room (300+ at stake) wears a crown, and an arrow on everyone's screen points to them.
+- Knock out the King: the usual 80% plus a **50% bounty** from the house pot. Amounts show as whole coins: every life stakes 100, new players get 1,000.
+
+**Share, challenge, play with friends**
+- After every life, **Share & challenge** makes an image card of your run and a link. On phones it opens the share sheet (WhatsApp, TikTok, Instagram…); on desktop it copies the link and saves the image.
+- Whoever opens the link sees "🔥 Alex scored 260 in Coil Stake. Beat it!" and, if they beat it, "YOU BEAT ALEX!" plus their own share button.
+- **👥 Play with friends** on any game card creates a private room (`?room=K7QX2#coil`) and copies the invite link. Needs the online server.
+- A 3-line how-to card the first time you open each game. Offensive nicknames are replaced. Rich link previews (Open Graph), installable as an app (web manifest), [privacy page](packages/client/public/privacy.html).
+
 **Sound and feel**
 - Synthesized meme sound effects in every game (airhorn on your KO, sad trombone when you die, "bruh" + boom on a hazard death, coin on cash-out, boing, zap, thunder…). No audio files, nothing copyrighted.
 - Mute with the 🔊 button or the **M** key; the choice is remembered.

@@ -4,6 +4,8 @@ import type { Dict } from '../i18n/en';
 import type { ServerStats } from '../net/server';
 import { h } from './dom';
 import { LivePreview, drawArt } from './previews';
+import type { Challenge } from './share';
+import { formatCredits } from '@arena/shared';
 
 export type ConnState = { kind: 'online'; stats: ServerStats } | { kind: 'busy'; text: string } | { kind: 'offline'; text: string };
 
@@ -15,7 +17,7 @@ export interface Landing {
 const FEATURED: GameId = 'volt';
 
 /** The landing page: hero, all games, how it works, fair play. */
-export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: string) => void, onLang: () => void): Landing {
+export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: string) => void, onLang: () => void, challenge: Challenge | null = null, online = false): Landing {
   const previews: LivePreview[] = [];
   const counters = new Map<GameId, HTMLElement>();
   const games = [...GAME_CATALOG].sort((a, b) => Number(b.available) - Number(a.available));
@@ -67,6 +69,7 @@ export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: st
       h(
         'div.l-hero-copy',
         {},
+        ...(challenge ? [challengeBanner(challenge)] : []),
         h('h1.l-title', {}, t('heroTitle')),
         h('p.l-lead', {}, t('heroText')),
         h('div.l-join', {}, nick, playNow),
@@ -104,7 +107,7 @@ export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: st
       {},
       h('p.disclaimer', {}, t('disclaimer')),
       h('p', {}, t('takeBreak')),
-      h('p', {}, h('a', { href: 'https://github.com/meddeb147/arena', target: '_blank', rel: 'noopener' }, t('sourceCode'))),
+      h('p', {}, h('a', { href: 'privacy.html', target: '_blank', rel: 'noopener' }, t('privacy')), ' · ', h('a', { href: 'https://github.com/meddeb147/arena', target: '_blank', rel: 'noopener' }, t('sourceCode'))),
     ),
   );
 
@@ -123,6 +126,13 @@ export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: st
   });
   if (matchMedia('(pointer: fine)').matches && !saved) nick.focus({ preventScroll: true });
 
+  function challengeBanner(c: Challenge): HTMLElement {
+    const game = GAME_CATALOG.find((g) => g.id === c.g)!;
+    const go = h('button.btn-card', { style: `--accent:${game.accent}` }, t('acceptChallenge'));
+    go.addEventListener('click', () => play(c.g));
+    return h('div.challenge', {}, h('span', {}, t('challengeBanner', { name: c.n, peak: formatCredits(c.p), game: game.name, kos: c.k })), go);
+  }
+
   function card(g: GameCatalogEntry): HTMLElement {
     const canvas = h('canvas.l-card-canvas', { 'data-game': g.id, 'aria-hidden': 'true' });
     const count = h('span.l-count');
@@ -130,11 +140,29 @@ export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: st
     const chips = h('div.l-chips', {}, ...g.skills.map((s) => h('span.chip', {}, s.name)), ...g.hazards.map((z) => h('span.chip.hz', {}, z)));
     const action = g.available ? h('button.btn-card', {}, t('play')) : h('span.btn-card.soon', {}, t('comingSoon'));
     if (g.available) action.addEventListener('click', () => play(g.id));
+    const friends = h('button.btn-friends', { type: 'button' }, t('playWithFriends'));
+    const note = h('p.friends-note');
+    friends.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!online) {
+        note.textContent = t('friendsNeedServer');
+        return;
+      }
+      const code = newRoomCode();
+      history.replaceState(null, '', `${location.pathname}?room=${code}#${g.id}`);
+      const link = `${location.origin}${location.pathname}?room=${code}#${g.id}`;
+      try {
+        await navigator.clipboard.writeText(link);
+      } catch {
+        /* the HUD chip offers the link again */
+      }
+      play(g.id);
+    });
     const el = h(
       `article.l-card${g.available ? '' : '.is-soon'}`,
       { style: `--accent:${g.accent}` },
       h('div.l-card-media', {}, canvas, count),
-      h('div.l-card-body', {}, h('h3', {}, g.name), h('p', {}, t(`tag_${g.id}` as keyof Dict)), chips, action),
+      h('div.l-card-body', {}, h('h3', {}, g.name), h('p', {}, t(`tag_${g.id}` as keyof Dict)), chips, h('div.card-actions', {}, action, g.available ? friends : ''), note),
     );
     if (g.available) {
       el.addEventListener('click', (e) => {
@@ -162,4 +190,11 @@ export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: st
       for (const p of previews) p.dispose();
     },
   };
+}
+
+/** 5-character room code without look-alike characters (no I, O, 0, 1). */
+export function newRoomCode(): string {
+  const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.getRandomValues(new Uint8Array(5));
+  return Array.from(bytes, (b) => abc[b % abc.length]).join('');
 }

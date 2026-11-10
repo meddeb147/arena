@@ -1,5 +1,6 @@
 import {
   PROTOCOL_VERSION,
+  ROOM_CODE_RE,
   TICK_MS,
   type ClientMsg,
   type EntitySnap,
@@ -26,13 +27,16 @@ export class NetSession implements GameSession {
   private lastKey = '';
   private ready!: Promise<void>;
   status: SessionStatus = 'connecting';
+  /** private room code, when playing with friends */
+  roomCode: string | null = null;
   closeReason = '';
 
   constructor(readonly gameId: GameId, name: string, base: string) {
     this.ws = new WebSocket(wsUrl(base));
     this.ready = new Promise<void>((resolve, reject) => {
       this.ws.onopen = () => {
-        this.raw({ t: 'hello', v: PROTOCOL_VERSION, game: gameId, name, guestId: guestId() });
+        const room = new URLSearchParams(location.search).get('room')?.toUpperCase() ?? '';
+        this.raw({ t: 'hello', v: PROTOCOL_VERSION, game: gameId, name, guestId: guestId(), ...(ROOM_CODE_RE.test(room) ? { room } : {}) });
         for (const m of this.queue) this.ws.send(m);
         this.queue = [];
       };
@@ -45,6 +49,7 @@ export class NetSession implements GameSession {
         }
         if (m.t === 'welcome') {
           this.size = m.world;
+          this.roomCode = m.code ?? null;
           this.setStatus('online');
           resolve();
         } else if (m.t === 's') this.applySnapshot(m);
@@ -72,7 +77,7 @@ export class NetSession implements GameSession {
     for (const id of m.d) this.world.delete(id);
     for (const e of m.u) this.world.set(e.id, e);
     this.onSnapshot?.(
-      { tick: m.tick, game: this.gameId, world: this.size, ents: [...this.world.values()], lb: m.lb, events: m.ev, you: m.you, pop: m.pop },
+      { tick: m.tick, game: this.gameId, world: this.size, ents: [...this.world.values()], lb: m.lb, events: m.ev, you: m.you, pop: m.pop, king: m.king ?? null },
       performance.now(),
     );
   }

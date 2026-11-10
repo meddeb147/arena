@@ -12,6 +12,8 @@ export interface GameSession {
   /** how far in the past to render, to smooth over snapshot gaps */
   readonly interpDelayMs: number;
   status: SessionStatus;
+  /** private room code when playing with friends (online only) */
+  roomCode?: string | null;
   /** Advance local time; may produce snapshots. */
   update(nowMs: number): void;
   sendInput(input: PlayerInput): void;

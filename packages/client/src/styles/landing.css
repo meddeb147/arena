@@ -82,3 +82,8 @@
   .l-steps { grid-template-columns: minmax(0, 1fr); }
   .l-header .status { order: 3; flex-basis: 100%; padding-bottom: 8px; }
 }
+.card-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: auto; }
+.card-actions .btn-card { margin-top: 0; }
+.btn-friends { border: 2px solid var(--accent); background: transparent; color: var(--text); border-radius: 12px; padding: 7px 12px; font-weight: 900; font-size: 13px; }
+.friends-note { font-size: 12px !important; color: var(--amber) !important; min-height: 0; }
+.friends-note:empty { display: none; }

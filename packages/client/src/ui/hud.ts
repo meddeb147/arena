@@ -123,7 +123,9 @@ export class Hud {
     let el: HTMLElement | null = null;
     if (ev.t === 'kill') {
       const text = ev.killerName ? t(this.texts.feedKill, { killer: ev.killerName, victim: ev.victimName }) : t(this.texts.feedHazard, { victim: ev.victimName });
-      el = h('div.panel', {}, h('span.k', {}, '☠ '), text, ev.amount ? h('span.amt', {}, ` +${formatCredits(ev.amount)}`) : '');
+      el = h('div.panel', {}, h('span.k', {}, '☠ '), text, ev.amount ? h('span.amt', {}, ` +${formatCredits(ev.amount)}`) : '', ev.bounty ? h('span.bounty', {}, ` 👑 +${formatCredits(ev.bounty)}`) : '');
+    } else if (ev.t === 'king') {
+      el = h('div.panel.king-feed', {}, t('newKing', { name: ev.name }));
     } else if (ev.t === 'cashout') {
       el = h('div.panel', {}, '💰 ', t('cashFeed', { name: ev.name }), h('span.amt', {}, ` ${formatCredits(ev.amount)}`));
     }

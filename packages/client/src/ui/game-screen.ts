@@ -6,9 +6,12 @@ import { SnapshotBuffer } from '../net/interp';
 import type { GameSession } from '../net/session';
 import { Stage } from '../render/stage';
 import { t } from '../i18n';
+import type { Dict } from '../i18n/en';
 import { h } from './dom';
 import { Hud } from './hud';
 import { BreakReminder, Juice } from './juice';
+import { KingMarker } from './king';
+import { activeChallenge, setActiveChallenge, shareRun } from './share';
 
 /** Hosts one game: stage + renderer + HUD + input, driven by a GameSession. */
 export class GameScreen {
@@ -54,6 +57,7 @@ export class GameScreen {
     this.hud = new Hud(this.controls, skillNames, cg.texts);
     this.el.append(this.hud.root);
     this.juice = new Juice(this.el, this.gameId, this.stage);
+    this.king = new KingMarker(this.stage, this.el);
     this.breaks = new BreakReminder(this.el, () => this.exit());
 
     let inited = false;
@@ -68,6 +72,22 @@ export class GameScreen {
       this.trackDeath(snap);
       this.hud.update(snap);
     };
+    this.showHowTo();
+    if (this.session.roomCode) {
+      const code = this.session.roomCode;
+      const chip = h('button.room-chip', { type: 'button' }, t('roomChip', { code }));
+      chip.addEventListener('pointerdown', (e) => e.stopPropagation());
+      chip.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(`${location.origin}${location.pathname}?room=${code}#${this.gameId}`);
+          chip.textContent = t('linkCopied');
+          setTimeout(() => (chip.textContent = t('roomChip', { code })), 2000);
+        } catch {
+          /* ignore */
+        }
+      });
+      this.el.append(chip);
+    }
     this.session.onStatus = (s) => {
       if (s === 'closed') this.showDisconnected();
     };
@@ -86,6 +106,7 @@ export class GameScreen {
       const me = sample.ents.find((e) => e.id === sample.snap.you.entityId);
       if (me) this.stage.follow(me.x, me.y, this.renderer.focusSize(me), dt);
       this.renderer.render(sample.ents, sample.snap, now, dt);
+      this.king?.update(sample.ents, sample.snap, now);
       if (Math.floor(now / TICK_MS) % 3 === 0) this.hud.drawMinimap(sample.snap, this.accent);
     }
     this.stage.update(dt);
@@ -117,7 +138,62 @@ export class GameScreen {
 
   private respawnBtn: HTMLButtonElement | null = null;
   private juice!: Juice;
+  private king: KingMarker | null = null;
   private breaks: BreakReminder | null = null;
+
+  /** "Share & challenge" for the life that just ended (plus the beat-the-challenge moment). */
+  private shareButton(): HTMLElement {
+    const life = this.juice.last;
+    if (!life) return h('div');
+    const ch = activeChallenge();
+    const beat = ch && ch.g === this.gameId && life.peak > ch.p ? ch : null;
+    const btn = h('button.btn-share', {}, t('share'));
+    const note = h('p.share-note');
+    btn.addEventListener('click', async () => {
+      const name = this.myName();
+      const r = await shareRun(this.gameId, name, life, beat);
+      if (r === 'copied') note.textContent = t('linkCopied');
+    });
+    const wrap = h('div.share-row', {}, btn, note);
+    if (beat) {
+      wrap.prepend(h('div.beat', {}, t('youBeat', { name: beat.n })));
+      setActiveChallenge(null);
+    }
+    return wrap;
+  }
+
+  /** First visit to a game: three lines on how it works. Dismissed with a tap; the game runs behind it. */
+  private showHowTo(): void {
+    const key = `howto:${this.gameId}`;
+    try {
+      if (localStorage.getItem(key)) return;
+    } catch {
+      return;
+    }
+    const lines = ([1, 2, 3] as const).map((n) => h('li', {}, t(`how_${this.gameId}_${n}` as keyof Dict)));
+    const ok = h('button.btn-play', {}, t('gotIt'));
+    const card = h('div.howto', { role: 'dialog' }, h('b', {}, t('howToPlay')), h('ul', {}, ...lines), ok);
+    const close = () => {
+      card.remove();
+      try {
+        localStorage.setItem(key, '1');
+      } catch {
+        /* ignore */
+      }
+    };
+    ok.addEventListener('click', close);
+    card.addEventListener('pointerdown', (e) => e.stopPropagation());
+    this.el.append(card);
+    setTimeout(close, 12000);
+  }
+
+  private myName(): string {
+    try {
+      return localStorage.getItem('nick') || 'Player';
+    } catch {
+      return 'Player';
+    }
+  }
 
   /** Stats for the life that just ended, with personal-best badges. */
   private lifeStats(): HTMLElement {
@@ -138,6 +214,7 @@ export class GameScreen {
       h('p', {}, t('youLost')),
       h('div.big', {}, `-${formatCredits(this.lastStake)}`),
       this.lifeStats(),
+      this.shareButton(),
       this.respawnBtn,
       h('div.row', { style: 'margin-top:10px' }, this.menuButton()),
     );
@@ -167,7 +244,7 @@ export class GameScreen {
   private showCashed(): void {
     const again = h('button.btn-play', {}, t('playAgain'));
     again.addEventListener('click', () => this.respawn());
-    this.openOverlay(h('h2', {}, t('cashedOut')), h('p', {}, t('addedToWallet')), h('div.big', {}, `+${formatCredits(this.lastStake)}`), this.lifeStats(), again, h('div.row', { style: 'margin-top:10px' }, this.menuButton()));
+    this.openOverlay(h('h2', {}, t('cashedOut')), h('p', {}, t('addedToWallet')), h('div.big', {}, `+${formatCredits(this.lastStake)}`), this.lifeStats(), this.shareButton(), again, h('div.row', { style: 'margin-top:10px' }, this.menuButton()));
   }
 
   private showDisconnected(): void {
@@ -207,6 +284,7 @@ export class GameScreen {
     this.hud?.ac.abort();
     this.session.dispose();
     this.renderer?.destroy();
+    this.king?.destroy();
     this.stage.destroy();
     this.onExit();
   }

@@ -145,3 +145,31 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .break-toast .row { display: flex; gap: 8px; }
 .break-toast .btn-play { font-size: 15px; padding: 12px; }
 @media (max-width: 600px) { .mute { inset-inline-start: auto; inset-inline-end: calc(150px + var(--safe-right)); } }
+
+/* ---------- the King ---------- */
+.king-arrow { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; display: flex; align-items: center; gap: 6px;
+  margin: -18px 0 0 -18px; font-weight: 900; font-size: 13px; color: #ffd84f; text-shadow: 0 2px 4px #000; white-space: nowrap; }
+.king-arrow i { width: 0; height: 0; border-top: 14px solid transparent; border-bottom: 14px solid transparent; border-left: 24px solid #ffd84f;
+  filter: drop-shadow(0 0 8px #ffd84f); transform-origin: 50% 50%; }
+.king-arrow span { background: rgba(23,20,51,.85); border: 1px solid #ffd84f66; border-radius: 999px; padding: 3px 9px; }
+.hud-feed .bounty { color: #ffd84f; }
+.hud-feed .king-feed { color: #ffd84f; }
+
+/* ---------- share & challenge ---------- */
+.share-row { display: grid; gap: 6px; margin: -6px 0 12px; }
+.btn-share { width: 100%; padding: 12px; border: 0; border-radius: var(--radius); font: 400 16px var(--font-display); color: #10302a;
+  background: linear-gradient(180deg, #6ff0c8, var(--mint)); box-shadow: 0 5px 0 #1c8c6c; }
+.btn-share:active { transform: translateY(3px); box-shadow: 0 2px 0 #1c8c6c; }
+.share-note { margin: 0 !important; font-size: 13px; color: var(--mint) !important; min-height: 0; }
+.share-row .beat { font: 400 20px var(--font-display); color: var(--amber); animation: pop-in .3s ease-out; }
+.challenge { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 0 0 18px; padding: 12px 16px; border-radius: 16px;
+  background: linear-gradient(90deg, #ff4f7b33, #ffb84f22); border: 2px solid var(--amber); font-weight: 900; max-width: 560px; }
+.challenge .btn-card { margin: 0; }
+.room-chip { position: absolute; top: calc(104px + var(--safe-top)); inset-inline-start: calc(10px + var(--safe-left)); z-index: 4; pointer-events: auto;
+  border: 2px solid var(--mint); background: rgba(23,20,51,.85); color: var(--mint); border-radius: 999px; padding: 6px 14px; font-weight: 900; font-size: 13px; }
+.howto { position: absolute; left: 50%; bottom: calc(150px + var(--safe-bottom)); transform: translateX(-50%); z-index: 7; pointer-events: auto;
+  width: min(420px, calc(100% - 32px)); background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 2px solid var(--accent);
+  border-radius: 20px; padding: 16px 18px; box-shadow: var(--shadow), 0 0 40px color-mix(in srgb, var(--accent) 40%, transparent); animation: pop-in .3s ease-out; }
+.howto b { font: 400 18px var(--font-display); color: var(--accent); }
+.howto ul { margin: 10px 0 14px; padding-inline-start: 18px; display: grid; gap: 6px; font-weight: 800; font-size: 14px; line-height: 1.35; }
+.howto .btn-play { font-size: 16px; padding: 10px; }

@@ -1,4 +1,4 @@
-import type { GameEvent, GameId, Snapshot } from '@arena/shared';
+import { formatCredits, type GameEvent, type GameId, type Snapshot } from '@arena/shared';
 import { play, type SoundName } from '../audio/sfx';
 import { t } from '../i18n';
 import type { Dict } from '../i18n/en';
@@ -106,6 +106,11 @@ export class Juice {
           this.kos++;
           this.streak++;
           play('airhorn', 0.9);
+          if (ev.bounty) {
+            this.showBanner(t('kingSlain', { n: formatCredits(ev.bounty) }));
+            play('streak', 1, 0.3);
+            play('coin', 1, 0.5);
+          }
           if (this.gameId === 'blob' || this.gameId === 'coil') play('gulp', 0.8, 0.05);
           if (this.streak >= 2) this.showStreak();
         } else if (ev.victimId === me) {
@@ -128,6 +133,12 @@ export class Juice {
         play(ev.slot === 0 ? 'boing' : 'zap', v);
         break;
       }
+      case 'king':
+        if (ev.id === me) {
+          this.showBanner(t('youAreKing'));
+          play('streak', 0.9);
+        }
+        break;
       case 'spawn':
         if (ev.id === me) play('whoosh', 0.6);
         break;
@@ -143,11 +154,15 @@ export class Juice {
 
   private showStreak(): void {
     const key = STREAK_KEYS[Math.min(this.streak, 6) - 2]!;
-    this.banner.textContent = t(key);
+    this.showBanner(t(key));
+    play('streak', 0.8, 0.5);
+  }
+
+  private showBanner(text: string): void {
+    this.banner.textContent = text;
     this.banner.classList.remove('show');
     void this.banner.offsetWidth;
     this.banner.classList.add('show');
-    play('streak', 0.8, 0.5);
     clearTimeout(this.bannerTimer);
     this.bannerTimer = window.setTimeout(() => this.banner.classList.remove('show'), 1600);
   }

@@ -9,6 +9,7 @@ import {
   PROTOCOL_VERSION,
   SPAWN_STAKE,
   TICK_RATE,
+  ROOM_CODE_RE,
   cleanName,
   type ClientMsg,
   type EntitySnap,
@@ -158,9 +159,10 @@ export class Gateway {
       if (this.ledger.balance(walletAcc(playerId)) === 0) this.ledger.transfer(MINT, walletAcc(playerId), STARTING_GRANT, 'grant', 0, 'welcome');
     }
 
+    const code = typeof msg.room === 'string' && ROOM_CODE_RE.test(msg.room) ? msg.room : null;
     let room: AnyRoom;
     try {
-      room = this.rooms.pick(game);
+      room = this.rooms.pick(game, code);
       room.addPlayer(playerId, name);
     } catch {
       return this.kick(c, 'full');
@@ -168,7 +170,7 @@ export class Gateway {
     c.playerId = playerId;
     c.room = room;
     this.byPlayer.set(playerId, c);
-    this.send(c, { t: 'welcome', playerId, roomId: room.roomId, game, world: { w: room.config.width, h: room.config.height }, tickRate: TICK_RATE });
+    this.send(c, { t: 'welcome', playerId, roomId: room.roomId, game, world: { w: room.config.width, h: room.config.height }, tickRate: TICK_RATE, ...(code ? { code } : {}) });
   }
 
   /** Called after the room manager advanced; streams snapshots to everyone. */
@@ -197,7 +199,7 @@ export class Gateway {
           c.sent.delete(id);
         }
       }
-      this.send(c, { t: 's', tick: snap.tick, u, d, lb: snap.lb, ev: events.get(c.room.roomId) ?? [], you: snap.you, pop: snap.pop });
+      this.send(c, { t: 's', tick: snap.tick, u, d, lb: snap.lb, ev: events.get(c.room.roomId) ?? [], you: snap.you, pop: snap.pop, king: snap.king });
     }
   }
 

@@ -1,5 +1,7 @@
 import {
   CASHOUT_HOLD_TICKS,
+  KING_BOUNTY_PCT,
+  KING_MIN_STAKE,
   DEFAULT_TARGET_POPULATION,
   DT,
   EMPTY_INPUT,
@@ -12,6 +14,7 @@ import {
   splitKill,
   type DeathCause,
   type GameEvent,
+  type KingInfo,
   type LeaderboardRow,
   type PlayerInput,
   type Snapshot,
@@ -83,6 +86,8 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
   private events: GameEvent[] = [];
   private lbCache: { tick: number; rows: LeaderboardRow[] } = { tick: -1, rows: [] };
   private botSeq = 0;
+  /** entity id of the current King (null when nobody qualifies) */
+  kingId: number | null = null;
 
   constructor(readonly game: GameModule<E, S, B>, opts: RoomOptions = {}) {
     this.roomId = opts.id ?? 'r1';
@@ -133,6 +138,13 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
         this.ledger.transfer(acc, HOUSE, stake, 'hazard_loss', this.tick, String(victim.id));
       }
     }
+    // knocking out the King pays a bounty on top, from the house pot
+    let bounty = 0;
+    if (validKiller && victim.id === this.kingId && stake > 0) {
+      bounty = Math.floor((stake * KING_BOUNTY_PCT) / 100);
+      if (bounty > 0) this.ledger.transfer(HOUSE, stakeAcc(this.roomId, validKiller.id), bounty, 'bounty', this.tick, String(victim.id));
+    }
+    if (victim.id === this.kingId) this.kingId = null;
     if (validKiller) {
       validKiller.kills++;
       const ks = this.humanByEntity(validKiller.id);
@@ -149,6 +161,7 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
       cause: validKiller ? 'player' : cause === 'player' ? 'hazard' : cause,
       x: victim.x,
       y: victim.y,
+      ...(bounty ? { bounty } : {}),
     });
     this.game.onDeath?.(this, victim, cause);
     const hs = this.humanByEntity(victim.id);
@@ -304,11 +317,40 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
       }
     }
 
-    // 6. bots
+    // 6. the King: richest living player above the threshold; must be overtaken, not tied
+    this.updateKing();
+
+    // 7. bots
     if (this.tick % 15 === 0) this.balanceBots();
     for (const b of this.bots.values()) {
       if (b.entityId === null && this.tick >= b.respawnAt) this.spawnBot(b);
     }
+  }
+
+  private updateKing(): void {
+    const current = this.kingId !== null ? this.ents.get(this.kingId) : undefined;
+    if (!current?.alive) this.kingId = null;
+    let best: E | null = null;
+    let bestStake = KING_MIN_STAKE - 1;
+    for (const e of this.ents.values()) {
+      if (!e.alive) continue;
+      const s = this.stakeOf(e);
+      if (s > bestStake) {
+        best = e;
+        bestStake = s;
+      }
+    }
+    if (!best || best.id === this.kingId) return;
+    if (current?.alive && this.stakeOf(current) >= bestStake) return;
+    this.kingId = best.id;
+    this.events.push({ t: 'king', id: best.id, name: best.name, stake: bestStake, x: best.x, y: best.y });
+  }
+
+  kingInfo(): KingInfo | null {
+    const k = this.kingId !== null ? this.ents.get(this.kingId) : undefined;
+    if (!k?.alive) return null;
+    const stake = this.stakeOf(k);
+    return { id: k.id, name: k.name, x: Math.round(k.x), y: Math.round(k.y), stake, bounty: Math.floor((stake * KING_BOUNTY_PCT) / 100) };
   }
 
   private cashout(e: E): void {
@@ -489,6 +531,7 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
       if (e.isBot) f |= EntFlag.Bot;
       if (e === me) f |= EntFlag.You;
       if (this.tick < e.protectedUntil) f |= EntFlag.Protected;
+      if (e.id === this.kingId) f |= EntFlag.King;
       if (e.cashoutTicks > 0) {
         f |= EntFlag.Cashout;
         s.p = Math.min(1, e.cashoutTicks / CASHOUT_HOLD_TICKS);
@@ -504,6 +547,7 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
       lb: this.leaderboard(5),
       events: this.events,
       pop: { humans: this.humans.size, bots: this.bots.size },
+      king: this.kingInfo(),
       you: {
         entityId: me?.id ?? null,
         state: h.state,

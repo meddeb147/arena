@@ -26,4 +26,9 @@ export const DISCONNECT_AUTO_CASHOUT = true;
 export const SPAWN_PROTECTION_TICKS = Math.round(2.5 * TICK_RATE);
 export const RESPAWN_MIN_TICKS = Math.round(1.0 * TICK_RATE);
 
+/** The richest player in a room (at least this stake) is crowned King. */
+export const KING_MIN_STAKE = 3 * CREDIT;
+/** Knocking out the King pays this % of the King's stake on top, from the house pot. */
+export const KING_BOUNTY_PCT = 50;
+
 export const PLAY_CREDITS_DISCLAIMER = 'Play credits only. No real money.';

@@ -104,6 +104,39 @@ describe('multiplayer gateway', () => {
     expect(c.msgs.some((m) => m.t === 'err')).toBe(true);
   });
 
+  it('private room codes keep friends together and strangers out', async () => {
+    const hello = (b: Bot, name: string, id: string, room?: string) => b.send({ t: 'hello', v: PROTOCOL_VERSION, game: 'blob', name, guestId: id, ...(room ? { room } : {}) });
+    const [f1, f2, other, pub, bad] = [0, 1, 2, 3, 4].map(() => new Bot(server.port));
+    await Promise.all([f1, f2, other, pub, bad].map((b) => b!.open()));
+    hello(f1!, 'Ana', 'guest-friend-001', 'K7QX2');
+    hello(f2!, 'Ben', 'guest-friend-002', 'K7QX2');
+    hello(other!, 'Cat', 'guest-friend-003', 'ZZZZ9');
+    hello(pub!, 'Dan', 'guest-friend-004');
+    hello(bad!, 'Eve', 'guest-friend-005', 'not a code');
+    await until(() => [f1, f2, other, pub, bad].every((b) => !!b!.welcome));
+    expect(f1!.welcome!.roomId).toBe(f2!.welcome!.roomId);
+    expect(f1!.welcome!.code).toBe('K7QX2');
+    expect(other!.welcome!.roomId).not.toBe(f1!.welcome!.roomId);
+    expect(pub!.welcome!.roomId).not.toBe(f1!.welcome!.roomId);
+    expect(pub!.welcome!.code).toBeUndefined();
+    expect(bad!.welcome!.code).toBeUndefined(); // invalid codes are ignored: public matchmaking
+    for (const b of [f1, f2, other, pub, bad]) b!.ws.close();
+  });
+
+  it('offensive nicknames are replaced', async () => {
+    const c = new Bot(server.port);
+    await c.open();
+    c.hello('Sh1t Lord', 'guest-rude-00001');
+    await until(() => !!c.welcome);
+    c.send({ t: 'spawn' });
+    await until(() => !!c.last && c.last.you.state === 'alive');
+    const me = c.world.get(c.last!.you.entityId!);
+    await until(() => !!c.world.get(c.last!.you.entityId!)?.n);
+    expect(c.world.get(c.last!.you.entityId!)!.n).toBe('Player');
+    expect(me).toBeTruthy();
+    c.ws.close();
+  });
+
   it('a second tab with the same guest replaces the first', async () => {
     const a = new Bot(server.port);
     await a.open();

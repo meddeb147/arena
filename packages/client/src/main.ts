@@ -10,6 +10,7 @@ import { fetchStats, serverBase } from './net/server';
 import { h } from './ui/dom';
 import { GameScreen } from './ui/game-screen';
 import { renderLanding, type ConnState, type Landing } from './ui/landing';
+import { readChallenge, setActiveChallenge } from './ui/share';
 
 const app = document.getElementById('app')!;
 applyDir();
@@ -84,9 +85,13 @@ function play(gameId: GameId, name: string): void {
   );
 }
 
+// a friend's challenge link: remember it for this tab and greet them with it
+const challenge = readChallenge();
+if (challenge) setActiveChallenge(challenge);
+
 function showLanding(): void {
   landing?.dispose();
-  landing = renderLanding(app, play, showLanding);
+  landing = renderLanding(app, play, showLanding, challenge, base !== null);
   landing.setConn(conn);
   void refreshStats();
   clearInterval(statsTimer);
@@ -110,7 +115,7 @@ async function refreshStats(): Promise<void> {
 // direct links: https://…/#volt opens that game straight away
 const fromHash = location.hash.slice(1);
 showLanding();
-if (playable(fromHash)) {
+if (playable(fromHash) && !challenge) {
   let nick = '';
   try {
     nick = localStorage.getItem('nick') ?? '';

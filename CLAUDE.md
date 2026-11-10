@@ -14,6 +14,8 @@
 - Every credit movement is one immutable `Transfer` row (double entry). Balances are derived from rows; the cache must equal `MemoryLedger.replay(rows)`.
 - Only `house` and `mint` may go negative. `mint` is the sole source of new play credits (grants/rewards).
 - Spawn: wallet → stake (SPAWN_STAKE). Kill: victim stake → 80% killer stake + 20% house (`splitKill`). Death without killer: stake → house. Cash-out: stake → wallet. Bots: house funds their stake, stake returns to house when they leave.
+- The King: the richest living player with at least `KING_MIN_STAKE` is crowned (must be overtaken, not tied). Knocking out the King adds a `bounty` transfer (house → killer stake, `KING_BOUNTY_PCT` of the King's stake). No bounty for hazard deaths.
+- Players see units as whole coins (`formatCredits(100) === '100'`); internally 1 credit is still 100 units.
 - An entity is never removed while its stake account is non-zero (the Room throws).
 - All balances always sum to zero. If you touch economy code, the fuzz test must still pass.
 
