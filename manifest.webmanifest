@@ -1,0 +1,16 @@
+{
+  "name": "Stake Arena",
+  "short_name": "Stake Arena",
+  "description": "Fast multiplayer arena games. Stake play credits, take 80% of every stake you knock out, cash out before someone gets you. Play credits only. No real money.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#171433",
+  "theme_color": "#171433",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
