@@ -5,6 +5,8 @@ import type { ServerStats } from '../net/server';
 import { h } from './dom';
 import { LivePreview, drawArt } from './previews';
 import type { Challenge } from './share';
+import { PLAYER_COLORS } from '@arena/engine';
+import { COLOR_UNLOCK, colorUnlocked, levelFor, loadProgress, saveProgress, xpForLevel } from '../progress';
 import { formatCredits } from '@arena/shared';
 
 export type ConnState = { kind: 'online'; stats: ServerStats } | { kind: 'busy'; text: string } | { kind: 'offline'; text: string };
@@ -73,6 +75,7 @@ export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: st
         h('h1.l-title', {}, t('heroTitle')),
         h('p.l-lead', {}, t('heroText')),
         h('div.l-join', {}, nick, playNow),
+        profile(),
         h('p.disclaimer', {}, t('disclaimer')),
       ),
       h('div.l-hero-stage', { style: `--accent:${featured.accent}` }, heroCanvas, h('span.l-hero-tag', {}, featured.name)),
@@ -125,6 +128,52 @@ export function renderLanding(host: HTMLElement, onPlay: (game: GameId, name: st
     }
   });
   if (matchMedia('(pointer: fine)').matches && !saved) nick.focus({ preventScroll: true });
+
+  /** Level, streak, bank, daily missions and colour picker (all stored on this device). */
+  function profile(): HTMLElement {
+    const p = loadProgress();
+    const lvl = levelFor(p.xp);
+    const from = xpForLevel(lvl);
+    const to = xpForLevel(lvl + 1);
+    let bank = 1000;
+    try {
+      const b = Number(localStorage.getItem('bank'));
+      if (Number.isFinite(b) && localStorage.getItem('bank') !== null) bank = b;
+    } catch {
+      /* ignore */
+    }
+    const bar = h('div.xp-bar', { role: 'progressbar', 'aria-valuenow': String(p.xp - from), 'aria-valuemax': String(to - from) }, h('i', { style: `width:${Math.round(((p.xp - from) / (to - from)) * 100)}%` }));
+    const top = h(
+      'div.p-top',
+      {},
+      h('span.p-level', {}, t('level', { n: lvl })),
+      bar,
+      h('span.p-chip', {}, t('dayStreak', { n: p.streak })),
+      h('span.p-chip.bank', {}, `🏦 ${t('bank')} ${formatCredits(bank)}`),
+    );
+    const missions = h('ul.p-missions');
+    for (const m of p.missions) {
+      missions.append(
+        h(`li${m.done ? '.done' : ''}`, {}, h('span', {}, m.done ? '✅' : '🎯'), h('span.txt', {}, t(`m_${m.id}` as keyof Dict, { n: formatCredits(m.goal) })), h('b', {}, `${formatCredits(Math.min(m.value, m.goal))}/${formatCredits(m.goal)}`)),
+      );
+    }
+    const colors = h('div.p-colors', { role: 'radiogroup', 'aria-label': t('yourColor') });
+    PLAYER_COLORS.forEach((c, i) => {
+      const open = colorUnlocked(p, i);
+      const sw = h(`button.swatch${i === p.color ? '.on' : ''}${open ? '' : '.locked'}`, { type: 'button', role: 'radio', 'aria-checked': String(i === p.color), style: `--c:#${c.toString(16).padStart(6, '0')}`, title: open ? '' : t('unlockAt', { n: COLOR_UNLOCK[i]! }) }, open ? '' : h('small', {}, `🔒${COLOR_UNLOCK[i]}`));
+      sw.disabled = !open;
+      sw.addEventListener('click', () => {
+        p.color = i;
+        saveProgress();
+        colors.querySelectorAll('.swatch').forEach((el, k) => {
+          el.classList.toggle('on', k === i);
+          el.setAttribute('aria-checked', String(k === i));
+        });
+      });
+      colors.append(sw);
+    });
+    return h('div.profile', {}, top, h('div.p-label', {}, t('missionsTitle')), missions, h('div.p-label', {}, t('yourColor')), colors);
+  }
 
   function challengeBanner(c: Challenge): HTMLElement {
     const game = GAME_CATALOG.find((g) => g.id === c.g)!;

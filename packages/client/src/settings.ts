@@ -3,6 +3,10 @@ export const settings = {
   reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
   muted: false,
   volume: 0.8,
+  /** record gameplay clips (off on weak phones and with ?clips=0) */
+  clips:
+    new URLSearchParams(location.search).get('clips') !== '0' &&
+    (!matchMedia('(pointer: coarse)').matches || (navigator.hardwareConcurrency ?? 4) >= 8),
 };
 
 try {

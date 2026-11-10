@@ -4,6 +4,7 @@ import { t } from '../i18n';
 import type { Dict } from '../i18n/en';
 import type { Stage } from '../render/stage';
 import { h } from './dom';
+import { applyEvent, levelFor, lifeXp, loadProgress, saveProgress, MISSION_XP, type ProgressEvent } from '../progress';
 
 /** Cosmetic fx event -> sound. */
 const FX_SOUND: Record<string, SoundName> = {
@@ -39,6 +40,9 @@ export interface LifeStats {
   kos: number;
   peak: number;
   best: { seconds: boolean; kos: boolean; peak: boolean };
+  xp: number;
+  level: number;
+  leveledUp: boolean;
 }
 
 interface Bests {
@@ -63,6 +67,17 @@ export class Juice {
   private banner: HTMLElement;
   private bannerTimer = 0;
   last: LifeStats | null = null;
+  private cashed = 0;
+
+  /** Progression events: missions tick, a banner on completion. */
+  private progress(ev: ProgressEvent): void {
+    const done = applyEvent(loadProgress(), ev);
+    saveProgress();
+    if (done.length) {
+      this.showBanner(t('missionDone', { n: MISSION_XP * done.length }));
+      play('streak', 0.9, 0.2);
+    }
+  }
 
   constructor(private readonly root: HTMLElement, private readonly gameId: GameId, private readonly stage: Stage) {
     this.banner = h('div.streak', { 'aria-live': 'polite' });
@@ -82,6 +97,7 @@ export class Juice {
         this.lifeStart = performance.now();
         this.kos = 0;
         this.peak = 0;
+        this.cashed = 0;
         this.streak = 0;
       }
       this.myId = you.entityId;
@@ -106,6 +122,9 @@ export class Juice {
           this.kos++;
           this.streak++;
           play('airhorn', 0.9);
+          this.progress({ t: 'ko' });
+          if (ev.bounty) this.progress({ t: 'king' });
+          if (this.streak >= 2) this.progress({ t: 'streak', n: this.streak });
           if (ev.bounty) {
             this.showBanner(t('kingSlain', { n: formatCredits(ev.bounty) }));
             play('streak', 1, 0.3);
@@ -123,6 +142,8 @@ export class Juice {
         break;
       case 'cashout':
         if (ev.id === me) {
+          this.cashed = ev.amount;
+          this.progress({ t: 'cashout', amount: ev.amount });
           play('coin', 1);
           play('coin', 0.8, 0.18);
           play('streak', 0.5, 0.3);
@@ -171,7 +192,15 @@ export class Juice {
     const seconds = Math.round((performance.now() - this.lifeStart) / 1000);
     const bests = this.loadBests();
     const best = { seconds: seconds > bests.seconds && seconds >= 10, kos: this.kos > bests.kos, peak: this.peak > bests.peak && this.peak > 100 };
-    this.last = { seconds, kos: this.kos, peak: this.peak, best };
+    const p = loadProgress();
+    const before = levelFor(p.xp);
+    const xp0 = p.xp;
+    p.xp += lifeXp(seconds, this.kos, this.cashed);
+    this.progress({ t: 'life', seconds, game: this.gameId });
+    const level = levelFor(p.xp);
+    saveProgress();
+    this.last = { seconds, kos: this.kos, peak: this.peak, best, xp: p.xp - xp0, level, leveledUp: level > before };
+    if (level > before) play('streak', 1, 0.6);
     this.saveBests({ seconds: Math.max(bests.seconds, seconds), kos: Math.max(bests.kos, this.kos), peak: Math.max(bests.peak, this.peak) });
     this.streak = 0;
   }

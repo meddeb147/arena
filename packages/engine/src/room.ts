@@ -183,13 +183,14 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
     return this.humans.size < this.maxPlayers;
   }
 
-  addPlayer(playerId: string, name: string): void {
+  /** `colorIndex` is a cosmetic choice (index into PLAYER_COLORS); anything invalid falls back to a default. */
+  addPlayer(playerId: string, name: string, colorIndex?: number): void {
     if (this.humans.has(playerId)) return;
     if (!this.hasSpaceForHuman()) throw new Error('room full');
     this.humans.set(playerId, {
       playerId,
       name: name.slice(0, 16) || 'Player',
-      color: PLAYER_COLORS[this.humans.size % PLAYER_COLORS.length]!,
+      color: PLAYER_COLORS[Number.isInteger(colorIndex) && colorIndex! >= 0 && colorIndex! < PLAYER_COLORS.length ? colorIndex! : this.humans.size % 10]!,
       entityId: null,
       state: 'lobby',
       input: { ...EMPTY_INPUT },

@@ -1,6 +1,15 @@
 import { GAMES, MINT, MemoryLedger, Room, walletAcc } from '@arena/engine';
 import { CREDIT, SPAWN_STAKE, TICK_MS, type GameId, type PlayerInput } from '@arena/shared';
 import type { GameSession, SessionStatus } from './session';
+import { loadProgress } from '../progress';
+
+export function saveBank(units: number): void {
+  try {
+    localStorage.setItem('bank', String(Math.max(0, Math.round(units))));
+  } catch {
+    /* ignore */
+  }
+}
 
 const PLAYER = 'local';
 
@@ -19,8 +28,16 @@ export class LocalSession implements GameSession {
     const game = GAMES[gameId];
     if (!game) throw new Error(`game not available: ${gameId}`);
     this.room = new Room(game, { id: 'local', seed: (Math.random() * 2 ** 31) | 0, ledger: this.ledger });
-    this.room.addPlayer(PLAYER, name);
-    this.ledger.transfer(MINT, walletAcc(PLAYER), 10 * CREDIT, 'grant');
+    this.room.addPlayer(PLAYER, name, loadProgress().color);
+    // the bank carries over between offline games (new players start with 1,000)
+    let bank = 10 * CREDIT;
+    try {
+      const saved = Number(localStorage.getItem('bank'));
+      if (Number.isSafeInteger(saved) && saved >= SPAWN_STAKE && saved < 1e9) bank = saved;
+    } catch {
+      /* ignore */
+    }
+    this.ledger.transfer(MINT, walletAcc(PLAYER), bank, 'grant');
     // let the bots spread out before we arrive
     for (let i = 0; i < 90; i++) this.room.step();
   }
@@ -51,6 +68,9 @@ export class LocalSession implements GameSession {
   }
 
   dispose(): void {
+    // leaving mid-life banks the stake, like the online auto-cash-out
+    const you = this.room.snapshotFor(PLAYER)?.you;
+    if (you) saveBank(you.wallet + you.stake);
     this.onSnapshot = null;
   }
 }

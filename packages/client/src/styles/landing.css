@@ -87,3 +87,25 @@
 .btn-friends { border: 2px solid var(--accent); background: transparent; color: var(--text); border-radius: 12px; padding: 7px 12px; font-weight: 900; font-size: 13px; }
 .friends-note { font-size: 12px !important; color: var(--amber) !important; min-height: 0; }
 .friends-note:empty { display: none; }
+
+/* ---------- profile: level, missions, colours ---------- */
+.profile { max-width: 480px; margin-top: 14px; padding: 14px 16px; border-radius: 18px; background: rgba(38, 33, 89, 0.7); border: 1px solid #ffffff14; display: grid; gap: 8px; }
+.p-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; }
+.p-level { font: 400 15px var(--font-display); color: var(--amber); }
+.xp-bar { flex: 1; min-width: 90px; height: 10px; border-radius: 999px; background: #0006; overflow: hidden; }
+.xp-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--violet), var(--pink)); }
+.p-chip { font-size: 12px; font-weight: 900; padding: 3px 9px; border-radius: 999px; background: #ffffff12; white-space: nowrap; }
+.p-chip.bank { color: var(--amber); font-variant-numeric: tabular-nums; }
+.p-label { font-size: 11px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+.p-missions { list-style: none; margin: 0; padding: 0; display: grid; gap: 5px; font-weight: 800; font-size: 14px; }
+.p-missions li { display: flex; gap: 8px; align-items: center; }
+.p-missions .txt { flex: 1; min-width: 0; }
+.p-missions b { color: var(--sky); font-variant-numeric: tabular-nums; }
+.p-missions li.done { color: var(--mint); }
+.p-missions li.done b { color: var(--mint); }
+.p-colors { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch { width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent; background: var(--c); padding: 0; display: grid; place-items: center; }
+.swatch.on { border-color: #fff; box-shadow: 0 0 14px var(--c); }
+.swatch.locked { opacity: .4; cursor: not-allowed; }
+.swatch small { font-size: 9px; font-weight: 900; color: #171433; }
+.swatch:focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }

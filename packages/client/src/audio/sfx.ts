@@ -28,6 +28,19 @@ export type SoundName =
 let ctx: AudioContext | null = null;
 let master: GainNode | null = null;
 let noiseBuf: AudioBuffer | null = null;
+let outNode: AudioNode | null = null;
+let streamDest: MediaStreamAudioDestinationNode | null = null;
+
+/** The game's sound as a MediaStream (so recorded clips have audio). */
+export function audioStream(): MediaStream | null {
+  const c = ensure();
+  if (!c || !outNode) return null;
+  if (!streamDest) {
+    streamDest = c.createMediaStreamDestination();
+    outNode.connect(streamDest);
+  }
+  return streamDest.stream;
+}
 const lastPlayed = new Map<SoundName, number>();
 /** minimum ms between two plays of the same sound, so crowds don't turn into noise */
 const THROTTLE: Partial<Record<SoundName, number>> = { punch: 70, pop: 60, gulp: 80, tick: 200, golden: 120, zap: 80, boing: 60 };
@@ -42,6 +55,7 @@ function ensure(): AudioContext | null {
   comp.threshold.value = -14;
   comp.ratio.value = 4;
   master.connect(comp).connect(ctx.destination);
+  outNode = comp;
   applyVolume();
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
   const d = noiseBuf.getChannelData(0);

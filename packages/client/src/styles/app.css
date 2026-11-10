@@ -173,3 +173,7 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 .howto b { font: 400 18px var(--font-display); color: var(--accent); }
 .howto ul { margin: 10px 0 14px; padding-inline-start: 18px; display: grid; gap: 6px; font-weight: 800; font-size: 14px; line-height: 1.35; }
 .howto .btn-play { font-size: 16px; padding: 10px; }
+.btn-clip { width: 100%; padding: 11px; border: 2px solid var(--sky); border-radius: var(--radius); background: transparent; font: 400 15px var(--font-display); color: var(--sky); }
+.btn-clip:disabled { opacity: .45; }
+.xp-line { margin: -8px 0 14px; font-weight: 900; font-size: 14px; color: var(--violet); }
+.xp-line.up { font: 400 20px var(--font-display); color: var(--amber); animation: pop-in .35s ease-out; }

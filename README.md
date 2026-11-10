@@ -65,6 +65,12 @@ Works in any modern browser on desktop and phone. Everyone who opens the link pl
 - **👥 Play with friends** on any game card creates a private room (`?room=K7QX2#coil`) and copies the invite link. Needs the online server.
 - A 3-line how-to card the first time you open each game. Offensive nicknames are replaced. Rich link previews (Open Graph), installable as an app (web manifest), [privacy page](packages/client/public/privacy.html).
 
+**Clips, levels and daily missions**
+- **🎬 Save clip**: the game records your current life (canvas + game sound, with a small watermark) and the end screen offers the last 6–25 seconds as a video: share sheet on phones, download on desktop. One encoder, restarted per life; off on weak phones or with `?clips=0`.
+- **Levels and XP** from playing, a **daily streak**, and **3 daily missions** (the same for everyone each day). Rewards are XP only.
+- **Colours** unlock by level (cosmetic only). Progress is stored on the device; it never touches play credits.
+- Offline, your **bank** carries over between games and shows on the landing page.
+
 **Sound and feel**
 - Synthesized meme sound effects in every game (airhorn on your KO, sad trombone when you die, "bruh" + boom on a hazard death, coin on cash-out, boing, zap, thunder…). No audio files, nothing copyrighted.
 - Mute with the 🔊 button or the **M** key; the choice is remembered.

@@ -10,6 +10,8 @@ What the code now does for growth, and what to do outside the code. The research
 | Challenge loop: friend opens link → banner → "YOU BEAT X!" → shares back | `?c=` links |
 | Play with friends (private rooms) | 👥 on each game card, `?room=CODE` |
 | Drama in every room: the King with a crown, an arrow and a bounty | all games |
+| One-tap gameplay clips with sound and watermark (🎬 Save clip) | death / cash-out screen |
+| Come back tomorrow: levels, daily streak, 3 daily missions, colour unlocks, persistent bank | landing profile |
 | Clip-friendly juice: streak banners, KO stamps, meme sounds, big whole-number payouts | all games |
 | Link previews (WhatsApp, Discord, X), installable app, privacy page | `index.html`, `public/` |
 | Safe for portals and streams: nickname filter, play credits only | `shared/protocol.ts` |

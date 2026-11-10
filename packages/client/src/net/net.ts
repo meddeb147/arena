@@ -9,6 +9,7 @@ import {
   type ServerMsg,
 } from '@arena/shared';
 import { guestId, wsUrl } from './server';
+import { loadProgress } from '../progress';
 import type { GameSession, SessionStatus } from './session';
 
 /**
@@ -36,7 +37,7 @@ export class NetSession implements GameSession {
     this.ready = new Promise<void>((resolve, reject) => {
       this.ws.onopen = () => {
         const room = new URLSearchParams(location.search).get('room')?.toUpperCase() ?? '';
-        this.raw({ t: 'hello', v: PROTOCOL_VERSION, game: gameId, name, guestId: guestId(), ...(ROOM_CODE_RE.test(room) ? { room } : {}) });
+        this.raw({ t: 'hello', v: PROTOCOL_VERSION, game: gameId, name, guestId: guestId(), color: loadProgress().color, ...(ROOM_CODE_RE.test(room) ? { room } : {}) });
         for (const m of this.queue) this.ws.send(m);
         this.queue = [];
       };

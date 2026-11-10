@@ -13,7 +13,7 @@ export const MAX_MESSAGE_BYTES = 1024;
 export const MAX_MESSAGES_PER_SECOND = 60;
 
 export type ClientMsg =
-  | { t: 'hello'; v: number; game: GameId; name: string; guestId: string; room?: string }
+  | { t: 'hello'; v: number; game: GameId; name: string; guestId: string; room?: string; color?: number }
   | { t: 'in'; seq: number; dx: number; dy: number; s1: 0 | 1; s2: 0 | 1; co: 0 | 1 }
   | { t: 'spawn' }
   | { t: 'refill' }

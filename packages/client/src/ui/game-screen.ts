@@ -11,6 +11,9 @@ import { h } from './dom';
 import { Hud } from './hud';
 import { BreakReminder, Juice } from './juice';
 import { KingMarker } from './king';
+import { ClipRecorder, shareClip } from './clip';
+import { saveBank } from '../net/local';
+import { settings } from '../settings';
 import { activeChallenge, setActiveChallenge, shareRun } from './share';
 
 /** Hosts one game: stage + renderer + HUD + input, driven by a GameSession. */
@@ -58,6 +61,7 @@ export class GameScreen {
     this.el.append(this.hud.root);
     this.juice = new Juice(this.el, this.gameId, this.stage);
     this.king = new KingMarker(this.stage, this.el);
+    if (settings.clips && ClipRecorder.supported()) this.clip = new ClipRecorder(this.stage.app.canvas);
     this.breaks = new BreakReminder(this.el, () => this.exit());
 
     let inited = false;
@@ -127,7 +131,13 @@ export class GameScreen {
         this.deathCause = ev.cause;
       }
     }
+    if (you.wallet !== this.lastBank) {
+      this.lastBank = you.wallet;
+      saveBank(you.wallet);
+    }
     if (you.state !== this.lastState) {
+      if (you.state === 'alive') this.clip?.start();
+      else if (this.lastState === 'alive') this.clipReady = this.clip?.lifeEnded() ?? null;
       if (you.state === 'dead') this.showDeath(s);
       else if (you.state === 'cashed') this.showCashed();
       else if (you.state === 'alive') this.closeOverlay();
@@ -139,6 +149,9 @@ export class GameScreen {
   private respawnBtn: HTMLButtonElement | null = null;
   private juice!: Juice;
   private king: KingMarker | null = null;
+  private clip: ClipRecorder | null = null;
+  private clipReady: Promise<Blob | null> | null = null;
+  private lastBank = -1;
   private breaks: BreakReminder | null = null;
 
   /** "Share & challenge" for the life that just ended (plus the beat-the-challenge moment). */
@@ -155,6 +168,20 @@ export class GameScreen {
       if (r === 'copied') note.textContent = t('linkCopied');
     });
     const wrap = h('div.share-row', {}, btn, note);
+    if (this.clip && this.clipReady) {
+      const ready = this.clipReady;
+      const ext = this.clip.extension;
+      const clipBtn = h('button.btn-clip', {}, t('saveClip'));
+      clipBtn.disabled = true;
+      void ready.then((b) => (clipBtn.disabled = !b || b.size < 20_000));
+      clipBtn.addEventListener('click', async () => {
+        const blob = await ready;
+        if (!blob) return;
+        const r = await shareClip(blob, `stake-arena-${this.gameId}.${ext}`, t('shareText', { game: GAME_CATALOG.find((g) => g.id === this.gameId)?.name ?? this.gameId, peak: formatCredits(life.peak), kos: life.kos }));
+        if (r === 'saved') note.textContent = t('clipSaved');
+      });
+      wrap.insertBefore(clipBtn, note);
+    }
     if (beat) {
       wrap.prepend(h('div.beat', {}, t('youBeat', { name: beat.n })));
       setActiveChallenge(null);
@@ -202,7 +229,9 @@ export class GameScreen {
     const mm = `${Math.floor(l.seconds / 60)}:${String(l.seconds % 60).padStart(2, '0')}`;
     const cell = (label: string, value: string, best: boolean) =>
       h(`div.stat${best ? '.best' : ''}`, {}, h('b', {}, value), h('span', {}, label), best ? h('i', {}, t('newBest')) : '');
-    return h('div.life-stats', {}, cell(t('lifeTime'), mm, l.best.seconds), cell(t('lifeKos'), String(l.kos), l.best.kos), cell(t('lifePeak'), formatCredits(l.peak), l.best.peak));
+    const stats = h('div.life-stats', {}, cell(t('lifeTime'), mm, l.best.seconds), cell(t('lifeKos'), String(l.kos), l.best.kos), cell(t('lifePeak'), formatCredits(l.peak), l.best.peak));
+    const xp = h(`div.xp-line${l.leveledUp ? '.up' : ''}`, {}, l.leveledUp ? t('levelUp', { n: l.level }) : `${t('xpGained', { n: l.xp })} · ${t('level', { n: l.level })}`);
+    return h('div', {}, stats, xp);
   }
 
   private showDeath(s: Snapshot): void {
@@ -285,6 +314,7 @@ export class GameScreen {
     this.session.dispose();
     this.renderer?.destroy();
     this.king?.destroy();
+    this.clip?.dispose();
     this.stage.destroy();
     this.onExit();
   }

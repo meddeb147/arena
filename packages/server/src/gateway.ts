@@ -163,7 +163,7 @@ export class Gateway {
     let room: AnyRoom;
     try {
       room = this.rooms.pick(game, code);
-      room.addPlayer(playerId, name);
+      room.addPlayer(playerId, name, typeof msg.color === 'number' ? msg.color : undefined);
     } catch {
       return this.kick(c, 'full');
     }

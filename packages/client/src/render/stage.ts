@@ -58,6 +58,14 @@ export class Stage {
     this.world.addChild(this.layerBg, this.layerMain, this.layerFx);
     this.app.stage.addChild(this.world);
     this.textures = this.makeTextures();
+    const mark = new Text({
+      text: `STAKE ARENA · ${location.host}${location.pathname.replace(/\/$/, '')}`,
+      style: { fontFamily: 'Bungee, Impact, sans-serif', fontSize: 15, fill: 0xffffff, stroke: { color: 0x171433, width: 4 } },
+      resolution: 2,
+    });
+    mark.alpha = 0.85;
+    mark.position.set(14, 14);
+    this.app.stage.addChild(mark);
   }
 
   private makeTextures(): Textures {

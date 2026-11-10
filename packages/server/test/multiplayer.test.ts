@@ -123,6 +123,23 @@ describe('multiplayer gateway', () => {
     for (const b of [f1, f2, other, pub, bad]) b!.ws.close();
   });
 
+  it('the chosen colour is used; invalid choices fall back', async () => {
+    const mk = async (id: string, color: unknown) => {
+      const c = new Bot(server.port);
+      await c.open();
+      c.send({ t: 'hello', v: PROTOCOL_VERSION, game: 'blob', name: 'Col', guestId: id, color });
+      await until(() => !!c.welcome);
+      c.send({ t: 'spawn' });
+      await until(() => !!c.last && c.last.you.entityId !== null && !!c.world.get(c.last.you.entityId));
+      const col = c.world.get(c.last!.you.entityId!)!.c;
+      c.ws.close();
+      return col;
+    };
+    expect(await mk('guest-color-0001', 12)).toBe(0xff2e63);
+    expect(typeof (await mk('guest-color-0002', 999))).toBe('number');
+    expect(typeof (await mk('guest-color-0003', 'red'))).toBe('number');
+  });
+
   it('offensive nicknames are replaced', async () => {
     const c = new Bot(server.port);
     await c.open();
