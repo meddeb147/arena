@@ -60,6 +60,8 @@ export interface EntitySnap {
   p?: number;
   /** health 0..1 (games with health bars) */
   h?: number;
+  /** polyline points, flattened [x0, y0, x1, y1, …] (snake bodies) */
+  pts?: number[];
 }
 
 export type DeathCause = 'player' | 'hazard' | 'self' | 'disconnect';

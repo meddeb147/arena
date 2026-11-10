@@ -39,7 +39,7 @@ interface Client {
 }
 
 const sameEnt = (a: EntitySnap, b: EntitySnap): boolean =>
-  a.x === b.x && a.y === b.y && a.r === b.r && a.a === b.a && a.c === b.c && a.f === b.f && a.s === b.s && a.p === b.p && a.n === b.n && a.k === b.k;
+  a.x === b.x && a.y === b.y && a.r === b.r && a.a === b.a && a.c === b.c && a.f === b.f && a.s === b.s && a.p === b.p && a.n === b.n && a.k === b.k && a.pts === b.pts;
 
 /**
  * WebSocket gateway: authenticates (guest ids for now), validates and

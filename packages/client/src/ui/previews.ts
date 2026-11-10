@@ -1,4 +1,4 @@
-import { APOTHEM, ARENA_CX, ARENA_CY, BlobKind, GAMES, MemoryLedger, Room, VOLT, VoltKind } from '@arena/engine';
+import { APOTHEM, ARENA_CX, ARENA_CY, BlobKind, CoilKind, GAMES, MemoryLedger, Room, SUMO_CX, SUMO_CY, SumoKind, VOLT, VoltKind } from '@arena/engine';
 import { TICK_MS, type EntitySnap, type GameId } from '@arena/shared';
 import { PELLET_COLORS } from '../render/color';
 import { settings } from '../settings';
@@ -21,6 +21,105 @@ function octPath(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numbe
 
 type Ent = { x: number; y: number; r: number; alive: boolean };
 const DRAW: Partial<Record<GameId, { center: (ents: Iterable<Ent>) => [number, number]; span: number; draw: Draw }>> = {
+  coil: {
+    center: (ents) => {
+      let best: (Ent & { mass?: number }) | null = null;
+      for (const e of ents as Iterable<Ent & { mass?: number }>) if (e.alive && (!best || (e.mass ?? 0) > (best.mass ?? 0))) best = e;
+      const keep = (v: number) => Math.min(3400 - 600, Math.max(600, v));
+      return best ? [keep(best.x), keep(best.y)] : [1700, 1700];
+    },
+    span: 1300,
+    draw(ctx, ents, _w, _h, t) {
+      ctx.fillStyle = '#0f2b2a';
+      ctx.fillRect(0, 0, 3400, 3400);
+      ctx.strokeStyle = '#3de0b0';
+      ctx.lineWidth = 10;
+      ctx.strokeRect(0, 0, 3400, 3400);
+      for (const e of ents) {
+        if (e.k === CoilKind.Pellet) {
+          ctx.fillStyle = e.c === -1 ? '#ffb84f' : hex(PELLET_COLORS[(e.c ?? 0) % PELLET_COLORS.length]!);
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r * 1.6 * (1 + 0.2 * Math.sin(t * 5 + e.id)), 0, Math.PI * 2);
+          ctx.fill();
+        } else if (e.k === CoilKind.Trap) {
+          ctx.fillStyle = '#ff4f7b';
+          ctx.beginPath();
+          for (let i = 0; i < 24; i++) {
+            const rr = i % 2 ? e.r * 0.75 : e.r * 1.3;
+            const a = (i / 24) * Math.PI * 2 + (e.a ?? 0);
+            ctx.lineTo(e.x + Math.cos(a) * rr, e.y + Math.sin(a) * rr);
+          }
+          ctx.fill();
+        }
+      }
+      for (const e of ents) {
+        if (e.k !== CoilKind.Snake || !e.pts) continue;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        const path = () => {
+          ctx.beginPath();
+          ctx.moveTo(e.pts![0]!, e.pts![1]!);
+          for (let i = 2; i < e.pts!.length; i += 2) ctx.lineTo(e.pts![i]!, e.pts![i + 1]!);
+        };
+        path();
+        ctx.strokeStyle = 'rgba(0,0,0,.45)';
+        ctx.lineWidth = e.r * 2.6 + 10;
+        ctx.stroke();
+        path();
+        ctx.strokeStyle = hex(e.c ?? 0x3de0b0);
+        ctx.lineWidth = e.r * 2.6;
+        ctx.stroke();
+        ctx.fillStyle = '#fff';
+        ctx.beginPath();
+        ctx.arc(e.x + Math.cos((e.a ?? 0) + 0.6) * e.r * 0.7, e.y + Math.sin((e.a ?? 0) + 0.6) * e.r * 0.7, e.r * 0.45, 0, Math.PI * 2);
+        ctx.arc(e.x + Math.cos((e.a ?? 0) - 0.6) * e.r * 0.7, e.y + Math.sin((e.a ?? 0) - 0.6) * e.r * 0.7, e.r * 0.45, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+  },
+  sumo: {
+    center: () => [SUMO_CX, SUMO_CY],
+    span: 2350,
+    draw(ctx, ents, _w, _h, t) {
+      ctx.fillStyle = '#050c1c';
+      ctx.fillRect(-500, -500, 3600, 3600);
+      for (const e of ents) {
+        if (e.k !== SumoKind.Platform) continue;
+        const danger = (e.p ?? 0) > 0.7;
+        ctx.fillStyle = '#1b3a6b';
+        ctx.beginPath();
+        ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = danger ? `rgba(255,79,123,${0.6 + 0.4 * Math.sin(t * 10)})` : '#4fd2ff';
+        ctx.lineWidth = 22;
+        ctx.stroke();
+      }
+      for (const e of ents) {
+        if (e.k === SumoKind.Bumper) {
+          ctx.fillStyle = '#ffb84f';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r * 1.2, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#2a1b52';
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, e.r * 0.8, 0, Math.PI * 2);
+          ctx.fill();
+        } else if (e.k === SumoKind.Fighter) {
+          const r = e.r * 1.7 * (e.h ?? 1);
+          ctx.fillStyle = (e.f ?? 0) & 1 ? '#9aa3b5' : hex(e.c ?? 0x4fd2ff);
+          ctx.beginPath();
+          ctx.arc(e.x, e.y, r, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(0,0,0,.35)';
+          ctx.save();
+          ctx.translate(e.x, e.y);
+          ctx.rotate(e.a ?? 0);
+          ctx.fillRect(-r * 0.25, -r * 0.95, r * 0.5, r * 1.9);
+          ctx.restore();
+        }
+      }
+    },
+  },
   blob: {
     // follow the biggest cell so there is always something happening
     center: (ents) => {

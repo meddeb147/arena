@@ -2,6 +2,8 @@ import { formatCredits, PLAY_CREDITS_DISCLAIMER, type GameEvent, type Snapshot }
 import { t } from '../i18n';
 import type { Controls } from '../input/controls';
 import type { ClientGame } from '../games';
+import { settings } from '../settings';
+import { play, toggleMute } from '../audio/sfx';
 import { h } from './dom';
 
 /** DOM heads-up display. Updates are diffed to avoid layout thrash at 60 FPS. */
@@ -17,6 +19,7 @@ export class Hud {
   private cash: HTMLButtonElement;
   private last = { wallet: -1, stake: -1, kills: -1, lb: '' };
   private readyPrev: [boolean, boolean] = [true, true];
+  readonly ac = new AbortController();
 
   constructor(controls: Controls, skillNames: [string, string], private readonly texts: ClientGame['texts']) {
     const row = (label: string, val: HTMLElement, cls = '') => h(`div.row${cls}`, {}, h('span', {}, label), val);
@@ -43,6 +46,25 @@ export class Hud {
     controlsEl.append(this.cash);
     this.root.append(controlsEl);
     this.root.title = PLAY_CREDITS_DISCLAIMER;
+
+    // sound toggle (also the M key)
+    const mute = h('button.mute', { 'aria-label': t('sound') });
+    const paint = () => {
+      mute.textContent = settings.muted ? '🔇' : '🔊';
+      mute.setAttribute('aria-pressed', String(!settings.muted));
+    };
+    paint();
+    const flip = () => {
+      toggleMute();
+      paint();
+      play('click', 0.6);
+    };
+    mute.addEventListener('pointerdown', (e) => e.stopPropagation());
+    mute.addEventListener('click', flip);
+    window.addEventListener('keydown', (e) => {
+      if (e.code === 'KeyM' && !(e.target instanceof HTMLInputElement)) flip();
+    }, { signal: this.ac.signal });
+    this.root.append(mute);
   }
 
   private bindHold(el: HTMLElement, set: (on: boolean) => void): void {

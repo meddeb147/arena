@@ -2,6 +2,8 @@ import type { GameId } from '@arena/shared';
 import type { GameModule } from '../types';
 import { blobGame } from './blob';
 import { voltGame } from './volt';
+import { coilGame } from './coil';
+import { sumoGame } from './sumo';
 
 /**
  * Game registry. Adding a game = implement GameModule in ./<id>/ and add it here.
@@ -10,12 +12,18 @@ import { voltGame } from './volt';
 export const GAMES: Partial<Record<GameId, GameModule<any, any, any>>> = {
   blob: blobGame,
   volt: voltGame,
+  coil: coilGame,
+  sumo: sumoGame,
 };
 
-export { blobGame, voltGame };
+export { blobGame, voltGame, coilGame, sumoGame };
 export * as blob from './blob';
 export * as volt from './volt';
 export type { BlobCell, BlobState, BlobBrain } from './blob';
 export { BlobKind, BLOB_CONFIG } from './blob';
 export type { VoltFighter, VoltState, VoltBrain } from './volt';
 export { VoltKind, VOLT_CONFIG, VOLT, APOTHEM, ARENA_CX, ARENA_CY } from './volt';
+export type { Snake, CoilState, CoilBrain } from './coil';
+export { CoilKind, COIL_CONFIG, COIL } from './coil';
+export type { Wrestler, SumoState, SumoBrain } from './sumo';
+export { SumoKind, SUMO_CONFIG, SUMO, SUMO_CX, SUMO_CY, platformAt } from './sumo';

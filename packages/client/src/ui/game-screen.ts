@@ -8,6 +8,7 @@ import { Stage } from '../render/stage';
 import { t } from '../i18n';
 import { h } from './dom';
 import { Hud } from './hud';
+import { BreakReminder, Juice } from './juice';
 
 /** Hosts one game: stage + renderer + HUD + input, driven by a GameSession. */
 export class GameScreen {
@@ -52,6 +53,8 @@ export class GameScreen {
     this.controls = new Controls(this.el);
     this.hud = new Hud(this.controls, skillNames, cg.texts);
     this.el.append(this.hud.root);
+    this.juice = new Juice(this.el, this.gameId, this.stage);
+    this.breaks = new BreakReminder(this.el, () => this.exit());
 
     let inited = false;
     this.session.onSnapshot = (snap, at) => {
@@ -61,6 +64,7 @@ export class GameScreen {
       }
       this.buffer.push(snap, at);
       this.renderer.onSnapshot(snap);
+      this.juice.onSnapshot(snap);
       this.trackDeath(snap);
       this.hud.update(snap);
     };
@@ -85,6 +89,7 @@ export class GameScreen {
       if (Math.floor(now / TICK_MS) % 3 === 0) this.hud.drawMinimap(sample.snap, this.accent);
     }
     this.stage.update(dt);
+    this.breaks?.update(now);
     this.raf = requestAnimationFrame(this.frame);
   };
 
@@ -111,6 +116,18 @@ export class GameScreen {
   }
 
   private respawnBtn: HTMLButtonElement | null = null;
+  private juice!: Juice;
+  private breaks: BreakReminder | null = null;
+
+  /** Stats for the life that just ended, with personal-best badges. */
+  private lifeStats(): HTMLElement {
+    const l = this.juice.last;
+    if (!l) return h('div');
+    const mm = `${Math.floor(l.seconds / 60)}:${String(l.seconds % 60).padStart(2, '0')}`;
+    const cell = (label: string, value: string, best: boolean) =>
+      h(`div.stat${best ? '.best' : ''}`, {}, h('b', {}, value), h('span', {}, label), best ? h('i', {}, t('newBest')) : '');
+    return h('div.life-stats', {}, cell(t('lifeTime'), mm, l.best.seconds), cell(t('lifeKos'), String(l.kos), l.best.kos), cell(t('lifePeak'), formatCredits(l.peak), l.best.peak));
+  }
 
   private showDeath(s: Snapshot): void {
     const title = this.killer ? t(this.texts.killedBy, { name: this.killer }) : this.deathCause === 'hazard' ? t(this.texts.hazard) : t('youLost');
@@ -120,6 +137,7 @@ export class GameScreen {
       h('h2', {}, title),
       h('p', {}, t('youLost')),
       h('div.big', {}, `-${formatCredits(this.lastStake)}`),
+      this.lifeStats(),
       this.respawnBtn,
       h('div.row', { style: 'margin-top:10px' }, this.menuButton()),
     );
@@ -149,7 +167,7 @@ export class GameScreen {
   private showCashed(): void {
     const again = h('button.btn-play', {}, t('playAgain'));
     again.addEventListener('click', () => this.respawn());
-    this.openOverlay(h('h2', {}, t('cashedOut')), h('p', {}, t('addedToWallet')), h('div.big', {}, `+${formatCredits(this.lastStake)}`), again, h('div.row', { style: 'margin-top:10px' }, this.menuButton()));
+    this.openOverlay(h('h2', {}, t('cashedOut')), h('p', {}, t('addedToWallet')), h('div.big', {}, `+${formatCredits(this.lastStake)}`), this.lifeStats(), again, h('div.row', { style: 'margin-top:10px' }, this.menuButton()));
   }
 
   private showDisconnected(): void {
@@ -186,6 +204,7 @@ export class GameScreen {
     cancelAnimationFrame(this.raf);
     if (location.hash) history.replaceState(null, '', location.pathname + location.search);
     this.controls?.dispose();
+    this.hud?.ac.abort();
     this.session.dispose();
     this.renderer?.destroy();
     this.stage.destroy();

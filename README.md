@@ -11,7 +11,7 @@ Real-time multiplayer arena games sharing one **play-credit** economy.
 
 ### 👉 [**https://meddeb147.github.io/arena/**](https://meddeb147.github.io/arena/)
 
-No download or sign-up: open the link, type a nickname, pick an arena. Two games are playable today, **Volt Brawl** and **Blob Stake**; the other six are on the landing page as "coming soon". Direct links open a game straight away: `…/arena/#volt`, `…/arena/#blob`.
+No download or sign-up: open the link, type a nickname, pick an arena. Four games are playable today: **Volt Brawl**, **Blob Stake**, **Coil Stake** and **Sumo Smash**; the other four are on the landing page as "coming soon". Direct links open a game straight away: `…/arena/#volt`, `#blob`, `#coil`, `#sumo`.
 
 Works in any modern browser on desktop and phone. Everyone who opens the link plays in the **same arena** (the server fills each room with up to 20 players and tops it up with bots). If the game server is unreachable the page offers offline play against bots.
 
@@ -37,6 +37,22 @@ Works in any modern browser on desktop and phone. Everyone who opens the link pl
 **Blob Stake** (eat or be eaten)
 - Eat pellets and cells clearly smaller than you. Spike traps pop cells bigger than them.
 
+**Coil Stake** (neon snakes)
+- Your head steers, your body is a wall. A snake whose head hits your body is eliminated and you take 80% of its stake.
+- **Jump** flies over bodies for a moment (you can't eat while airborne). **Magnet** pulls food to you for 3 s.
+- Dead snakes burst into a trail of glowing food. Golden pellets are worth 6. Walls and spike traps kill.
+
+**Sumo Smash** (pinball sumo)
+- Bouncy wrestlers on a round mat that slowly shrinks, holds, then snaps back with a shockwave.
+- Push people off: whoever touched them last (within 4 s) gets the kill. Spinning bumpers in the middle launch you.
+- **Ram** charges forward and hits much harder. **Heavy** makes you nearly immovable for 2 s (but slow).
+
+**Sound and feel**
+- Synthesized meme sound effects in every game (airhorn on your KO, sad trombone when you die, "bruh" + boom on a hazard death, coin on cash-out, boing, zap, thunder…). No audio files, nothing copyrighted.
+- Mute with the 🔊 button or the **M** key; the choice is remembered.
+- Kill streak banners (DOUBLE! TRIPLE! RAMPAGE!…), per-life stats and personal bests on the death and cash-out screens.
+- After every 30 minutes of play a reminder offers a break.
+
 | | Desktop | Phone |
 |---|---|---|
 | Steer | Mouse (distance from centre = speed) or WASD / arrows | Put your thumb anywhere: floating joystick |
@@ -53,7 +69,7 @@ Languages: English, Français, العربية (RTL), chosen on the menu.
 | 1 | Monorepo, shared types, engine, one room, **Blob Stake** with bots, in-browser play | ✅ done |
 | 2 | WebSocket multiplayer, matchmaking, delta snapshots, interpolation | ✅ done (client-side prediction: later) |
 | 3 | PostgreSQL ledger, accounts (email/Google/guest), leaderboards | |
-| 4 | More games on the shared engine | in progress: **Volt Brawl** done; Coil, Tank, Sumo, Blade, Bomber, Hot Potato next |
+| 4 | More games on the shared engine | in progress: **Volt Brawl**, **Coil Stake**, **Sumo Smash** done; Tank, Blade, Bomber, Hot Potato next |
 | 5 | Landing page, HUD polish, audio, settings, full i18n | landing page done (live game previews, how it works, fair play) |
 | 6 | Cosmetics, missions, prizes page, charity counter | |
 | 7 | Anti-cheat, 200-bot load tests, security review | |

@@ -33,6 +33,7 @@
 - Client DOM: build with `h()` and text nodes; never `innerHTML` with user-provided strings (nicknames!).
 - All UI strings go through `t()` with keys in `i18n/en.ts`, `fr.ts`, `ar.ts`. Use logical CSS properties (`inset-inline-start`) so RTL works.
 - Respect `settings.reducedMotion` for shake/particles.
+- Sounds live in `client/src/audio/sfx.ts` (Web Audio synthesis only). Game events map to sounds in `ui/juice.ts`; new fx kinds need an entry in `FX_SOUND`.
 - TypeScript strict; run `npm run check` (typecheck + tests) before committing.
 
 ## Adding a game (see README for detail)

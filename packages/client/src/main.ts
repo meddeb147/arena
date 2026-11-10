@@ -3,6 +3,7 @@ import './styles/app.css';
 import './styles/landing.css';
 import { GAME_CATALOG, type GameId } from '@arena/shared';
 import { applyDir, t } from './i18n';
+import { unlockAudio } from './audio/sfx';
 import { LocalSession } from './net/local';
 import { NetSession } from './net/net';
 import { fetchStats, serverBase } from './net/server';
@@ -12,6 +13,8 @@ import { renderLanding, type ConnState, type Landing } from './ui/landing';
 
 const app = document.getElementById('app')!;
 applyDir();
+// browsers allow audio only after a user gesture
+for (const ev of ['pointerdown', 'keydown'] as const) window.addEventListener(ev, unlockAudio, { capture: true });
 
 const base = serverBase();
 let landing: Landing | null = null;

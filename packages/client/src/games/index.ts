@@ -3,6 +3,8 @@ import type { Dict } from '../i18n/en';
 import type { GameRenderer } from './renderer';
 import { BlobRenderer } from './blob/renderer';
 import { VoltRenderer } from './volt/renderer';
+import { CoilRenderer } from './coil/renderer';
+import { SumoRenderer } from './sumo/renderer';
 
 export interface ClientGame {
   make: () => GameRenderer;
@@ -14,4 +16,6 @@ export interface ClientGame {
 export const CLIENT_GAMES: Partial<Record<GameId, ClientGame>> = {
   blob: { make: () => new BlobRenderer(), texts: { killedBy: 'eatenBy', hazard: 'poppedByTrap', feedKill: 'killFeed', feedHazard: 'trapFeed' } },
   volt: { make: () => new VoltRenderer(), texts: { killedBy: 'knockedOutBy', hazard: 'friedByArena', feedKill: 'koFeed', feedHazard: 'friedFeed' } },
+  coil: { make: () => new CoilRenderer(), texts: { killedBy: 'coiledBy', hazard: 'wallOrTrap', feedKill: 'coilFeed', feedHazard: 'splatFeed' } },
+  sumo: { make: () => new SumoRenderer(), texts: { killedBy: 'pushedOffBy', hazard: 'fellOff', feedKill: 'sumoFeed', feedHazard: 'fellFeed' } },
 };
