@@ -1,0 +1,29 @@
+{
+  "scenario": "volt",
+  "fps": 60,
+  "seconds": 17.5,
+  "moments": [
+    {
+      "type": "ko",
+      "t": 5.651,
+      "amount": 80,
+      "stake": 180
+    },
+    {
+      "type": "ko",
+      "t": 7.763,
+      "amount": 80,
+      "stake": 260
+    },
+    {
+      "type": "cashout-start",
+      "t": 10.051
+    },
+    {
+      "type": "cashout",
+      "t": 13.027,
+      "amount": 260,
+      "wallet": 1160
+    }
+  ]
+}

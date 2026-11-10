@@ -1,0 +1,13 @@
+{
+  "scenario": "blob",
+  "fps": 60,
+  "seconds": 7,
+  "moments": [
+    {
+      "type": "ko",
+      "t": 4.178,
+      "amount": 80,
+      "stake": 180
+    }
+  ]
+}

@@ -45,7 +45,7 @@ export const S3Enter: React.FC = () => {
           </div>
         ) : (
           <Sequence from={LAND} layout="none">
-            <ClipFrame clip="volt" from={0} rate={0.85} accent={C.voltMagenta} style={{ width: "100%", height: "100%" }} />
+            <ClipFrame clip="volt" from={0} rate={0.72} accent={C.voltMagenta} style={{ width: "100%", height: "100%" }} />
           </Sequence>
         )}
         {frame >= LAND && <Burst f={frame - LAND} scale={0.5 * u} seed="land" colors={[C.amber, C.voltMagenta, '#fff']} />}
