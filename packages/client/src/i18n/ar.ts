@@ -96,5 +96,10 @@ export const ar: Dict = {
   potatoBoom: 'انفجرت البطاطا في يديك!',
   potatoFeed: '{killer} طبخ {victim}',
   potatoSelfFeed: '{victim} انطبخ',
+  tag_stomp: 'اقفز على الرؤوس. تجنب الحمم.',
+  stompedBy: 'داس عليك {name}',
+  stompHazard: 'أصابتك الحمم أو الأشواك!',
+  stompFeed: '{killer} داس على {victim}',
+  stompHazardFeed: '{victim} سقط في الحمم',
   keysHelp: 'الفأرة للتوجيه · {dash} اندفاع · {shield} درع · اضغط مطولاً {cash} للسحب',
 };

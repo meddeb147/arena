@@ -5,6 +5,7 @@ import { voltGame } from './volt';
 import { coilGame } from './coil';
 import { bomberGame } from './bomber';
 import { potatoGame } from './potato';
+import { stompGame } from './stomp';
 
 /**
  * Game registry. Adding a game = implement GameModule in ./<id>/ and add it here.
@@ -16,9 +17,10 @@ export const GAMES: Partial<Record<GameId, GameModule<any, any, any>>> = {
   coil: coilGame,
   bomber: bomberGame,
   potato: potatoGame,
+  stomp: stompGame,
 };
 
-export { blobGame, voltGame, coilGame, bomberGame, potatoGame };
+export { blobGame, voltGame, coilGame, bomberGame, potatoGame, stompGame };
 export * as blob from './blob';
 export * as volt from './volt';
 export type { BlobCell, BlobState, BlobBrain } from './blob';
@@ -31,3 +33,5 @@ export type { Bomber, BomberState } from './bomber';
 export { BomberKind, BOMBER_CONFIG, BOMBER } from './bomber';
 export type { Runner, PotatoState } from './potato';
 export { PotatoKind, POTATO_CONFIG, POTATO, holding } from './potato';
+export type { Stomper, StompState } from './stomp';
+export { StompKind, STOMP_CONFIG, STOMP, LEVEL } from './stomp';

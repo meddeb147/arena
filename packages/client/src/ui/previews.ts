@@ -1,4 +1,4 @@
-import { APOTHEM, ARENA_CX, ARENA_CY, BOMBER, BlobKind, BomberKind, CoilKind, GAMES, MemoryLedger, PotatoKind, Room, VOLT, VoltKind } from '@arena/engine';
+import { APOTHEM, ARENA_CX, ARENA_CY, BOMBER, BlobKind, BomberKind, CoilKind, GAMES, MemoryLedger, PotatoKind, Room, STOMP, StompKind, VOLT, VoltKind } from '@arena/engine';
 import { TICK_MS, type EntitySnap, type GameId } from '@arena/shared';
 import { PELLET_COLORS } from '../render/color';
 import { settings } from '../settings';
@@ -50,6 +50,36 @@ const players = (ctx: CanvasRenderingContext2D, ents: EntitySnap[], kind: number
 };
 
 const DRAW: Partial<Record<GameId, { center: (ents: Iterable<Ent>) => [number, number]; span: number; draw: Draw }>> = {
+  stomp: {
+    center: crowd(1800, 3600, 700),
+    span: 1700,
+    draw(ctx, ents, _w, _h, t) {
+      ctx.fillStyle = '#12291e';
+      ctx.fillRect(-500, -500, 4600, 3000);
+      for (const e of ents) {
+        if (e.k === StompKind.Platform || e.k === StompKind.Mover) {
+          const w = e.pts?.[0] ?? 100;
+          const h = e.pts?.[1] ?? 28;
+          ctx.fillStyle = '#234a33';
+          ctx.fillRect(e.x, e.y, w, h);
+          ctx.fillStyle = e.k === StompKind.Mover ? '#ffb84f' : '#3de0b0';
+          ctx.fillRect(e.x, e.y - 4, w, 10);
+        } else if (e.k === StompKind.Spring) disc(ctx, e.x, e.y - 24, 22, '#ff4f7b');
+        else if (e.k === StompKind.Spikes) {
+          ctx.fillStyle = '#d0d6e8';
+          ctx.fillRect(e.x, e.y - 20, (e.pts?.[0] ?? 60), 20);
+        }
+      }
+      ctx.fillStyle = '#ff5a2a';
+      ctx.fillRect(-500, STOMP.lavaY + Math.sin(t * 2) * 6, 4600, 800);
+      for (const e of ents) {
+        if (e.k !== StompKind.Player) continue;
+        ctx.fillStyle = hex(e.c ?? 0x7bff8a);
+        ctx.fillRect(e.x - 34, e.y - 40, 68, 76);
+        disc(ctx, e.x + (Math.cos(e.a ?? 0) >= 0 ? 14 : -14), e.y - 16, 10, '#fff');
+      }
+    },
+  },
   bomber: {
     center: crowd(1050, 2100, 650),
     span: 1500,

@@ -48,6 +48,8 @@ export interface GameConfig {
   skills: [SkillDef, SkillDef];
   /** radius around the viewer included in snapshots (interest management) */
   viewRadius: number;
+  /** humans + bots this game's rooms aim for (default DEFAULT_TARGET_POPULATION) */
+  population?: number;
 }
 
 /** Bot personality, rolled once per bot. Games may read it to vary behaviour. */

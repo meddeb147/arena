@@ -94,6 +94,11 @@ export const en = {
   potatoBoom: 'The potato exploded in your hands!',
   potatoFeed: '{killer} cooked {victim}',
   potatoSelfFeed: '{victim} got cooked',
+  tag_stomp: 'Jump on heads. Dodge the lava.',
+  stompedBy: 'Stomped by {name}',
+  stompHazard: 'Lava or spikes got you!',
+  stompFeed: '{killer} stomped {victim}',
+  stompHazardFeed: '{victim} hit the lava',
   keysHelp: 'Mouse to steer · {dash} Dash · {shield} Shield · hold {cash} to cash out',
 } as const;
 

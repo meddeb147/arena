@@ -1,4 +1,4 @@
-export type GameId = 'coil' | 'blob' | 'volt' | 'bomber' | 'potato';
+export type GameId = 'coil' | 'blob' | 'volt' | 'bomber' | 'potato' | 'stomp';
 
 /** What a client is allowed to send each tick. Everything else is decided by the server. */
 export interface PlayerInput {

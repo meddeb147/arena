@@ -96,5 +96,10 @@ export const fr: Dict = {
   potatoBoom: 'La patate a explosé dans vos mains !',
   potatoFeed: '{killer} a cuit {victim}',
   potatoSelfFeed: '{victim} est cuit',
+  tag_stomp: 'Sautez sur les têtes. Évitez la lave.',
+  stompedBy: 'Écrasé par {name}',
+  stompHazard: 'La lave ou les pics vous ont eu !',
+  stompFeed: '{killer} a écrasé {victim}',
+  stompHazardFeed: '{victim} est tombé dans la lave',
   keysHelp: 'Souris pour diriger · {dash} Sprint · {shield} Bouclier · maintenir {cash} pour encaisser',
 };

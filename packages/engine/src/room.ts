@@ -89,7 +89,7 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
     this.rng = new Rng(opts.seed ?? 1);
     this.ledger = opts.ledger ?? new MemoryLedger();
     this.maxPlayers = opts.maxPlayers ?? MAX_PLAYERS_PER_ROOM;
-    this.targetPopulation = Math.min(this.maxPlayers, opts.targetPopulation ?? DEFAULT_TARGET_POPULATION);
+    this.targetPopulation = Math.min(this.maxPlayers, opts.targetPopulation ?? game.config.population ?? DEFAULT_TARGET_POPULATION);
     this.botRespawnTicks = opts.botRespawnTicks ?? 45;
     this.state = game.createState({ rng: this.rng, newId: () => this.newId(), config: game.config });
     this.balanceBots();
@@ -353,7 +353,8 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
     const n = ++this.botSeq;
     const slot: BotSlot<B> = {
       botId: `bot:${this.roomId}:${n}`,
-      name: BOT_NAMES[(n * 7) % BOT_NAMES.length]!,
+      // step must be coprime with the list length (28) to visit every name
+      name: BOT_NAMES[(n * 11) % BOT_NAMES.length]!,
       color: this.rng.pick(PLAYER_COLORS),
       persona: {
         skill: this.rng.range(0.25, 0.95),

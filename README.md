@@ -11,7 +11,7 @@ Real-time multiplayer arena games sharing one **play-credit** economy.
 
 ### 👉 [**https://meddeb147.github.io/arena/**](https://meddeb147.github.io/arena/)
 
-No download or sign-up: open the link, type a nickname, pick an arena. **5 games** are playable: Coil Stake, Blob Stake, Volt Brawl, Bomber Blast and Hot Potato. Direct links open a game straight away: `…/arena/#volt`, `#blob`, `#coil`, `#bomber`, `#potato`.
+No download or sign-up: open the link, type a nickname, pick an arena. **6 games** are playable: Coil Stake, Blob Stake, Volt Brawl, Stomp Stake, Bomber Blast and Hot Potato. Direct links open a game straight away: `…/arena/#volt`, `#blob`, `#coil`, `#stomp`, `#bomber`, `#potato`.
 
 Works in any modern browser on desktop and phone. Everyone who opens the link plays in the **same arena** (the server fills each room with up to 20 players and tops it up with bots). If the game server is unreachable the page offers offline play against bots.
 
@@ -41,6 +41,11 @@ Works in any modern browser on desktop and phone. Everyone who opens the link pl
 - Your head steers, your body is a wall. A snake whose head hits your body is eliminated and you take 80% of its stake.
 - **Jump** flies over bodies for a moment (you can't eat while airborne). **Magnet** pulls food to you for 3 s.
 - Dead snakes burst into a trail of glowing food. Golden pellets are worth 6. Walls and spike traps kill.
+
+**Stomp Stake** (side-view platformer)
+- Run and jump across neon platforms above a lava sea. Land on someone's head to eliminate them and take 80% of their stake (you bounce off). Jumping *up* into someone's feet is a head-bonk: nobody dies.
+- **Jump** (Space, W, ↑, or flick the joystick up) with a double jump in the air; release early for a short hop. **Ground Pound** (E) slams straight down and crushes whoever is below.
+- Springs launch you, moving platforms carry you, spikes and lava kill. Bump someone into the lava and you get the kill if you touched them in the last 3 s.
 
 **Bomber Blast** (timed bombs)
 - **Bomb** drops a 2-second bomb (up to 3 at once). Walk into a bomb to kick it; bombs set off nearby bombs in chains.
@@ -72,7 +77,7 @@ Languages: English, Français, العربية (RTL), chosen on the menu.
 | 1 | Monorepo, shared types, engine, one room, **Blob Stake** with bots, in-browser play | ✅ done |
 | 2 | WebSocket multiplayer, matchmaking, delta snapshots, interpolation | ✅ done (client-side prediction: later) |
 | 3 | PostgreSQL ledger, accounts (email/Google/guest), leaderboards | |
-| 4 | More games on the shared engine | ✅ 5 games playable (Tank Duel, Sumo Smash and Blade Spin were removed) |
+| 4 | More games on the shared engine | ✅ 6 games playable (Stomp Stake added; Tank Duel, Sumo Smash and Blade Spin were removed) |
 | 5 | Landing page, HUD polish, audio, settings, full i18n | landing page done (live game previews, how it works, fair play) |
 | 6 | Cosmetics, missions, prizes page, charity counter | |
 | 7 | Anti-cheat, 200-bot load tests, security review | |
