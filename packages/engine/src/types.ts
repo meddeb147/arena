@@ -1,4 +1,4 @@
-import type { DeathCause, EntitySnap, GameId, PlayerInput, Rng } from '@arena/shared';
+import type { DeathCause, EntitySnap, GameEvent, GameId, PlayerInput, Rng } from '@arena/shared';
 
 /** Fields every game entity (a player's or bot's avatar) has. Games extend this. */
 export interface BaseEntity {
@@ -77,6 +77,8 @@ export interface Sim<E extends BaseEntity, S> {
   kill(victim: E, killer: E | null, cause: DeathCause): void;
   /** Current stake of an entity (derived from the ledger). */
   stakeOf(e: E): number;
+  /** Queue a cosmetic event for clients (sparks, bolts, sounds). */
+  emit(ev: GameEvent): void;
 }
 
 export interface StateInit {

@@ -1,68 +1,118 @@
 import './styles/tokens.css';
 import './styles/app.css';
-import type { GameId } from '@arena/shared';
+import './styles/landing.css';
+import { GAME_CATALOG, type GameId } from '@arena/shared';
 import { applyDir, t } from './i18n';
 import { LocalSession } from './net/local';
 import { NetSession } from './net/net';
 import { fetchStats, serverBase } from './net/server';
+import { h } from './ui/dom';
 import { GameScreen } from './ui/game-screen';
-import { renderMenu, type MenuApi } from './ui/menu';
+import { renderLanding, type ConnState, type Landing } from './ui/landing';
 
 const app = document.getElementById('app')!;
 applyDir();
 
 const base = serverBase();
-let lastStatus: { text: string; kind: 'online' | 'busy' | 'offline' } | null = null;
+let landing: Landing | null = null;
+let conn: ConnState = base ? { kind: 'busy', text: t('connecting') } : { kind: 'offline', text: t('offlineMode') };
+let statsTimer = 0;
 
-function startGame(gameId: GameId, session: LocalSession | NetSession): void {
-  new GameScreen(app, gameId, session, showMenu);
+const playable = (id: string): id is GameId => GAME_CATALOG.some((g) => g.id === id && g.available);
+
+function enterGame(gameId: GameId, session: LocalSession | NetSession): void {
+  landing?.dispose();
+  landing = null;
+  clearInterval(statsTimer);
+  history.replaceState(null, '', `#${gameId}`);
+  new GameScreen(app, gameId, session, showLanding);
 }
 
 function playOffline(gameId: GameId, name: string): void {
-  startGame(gameId, new LocalSession(gameId, name));
+  enterGame(gameId, new LocalSession(gameId, name));
 }
 
-async function playOnline(menu: MenuApi, gameId: GameId, name: string): Promise<void> {
+/** Join online, with a small dialog while connecting (free hosts may need to wake up). */
+function play(gameId: GameId, name: string): void {
   if (!base) return playOffline(gameId, name);
-  menu.setBusy(t('connecting'));
-  const slow = setTimeout(() => menu.setStatus(t('waking'), 'busy'), 2500);
+  const game = GAME_CATALOG.find((g) => g.id === gameId)!;
+  const msg = h('p', {}, t('connecting'));
+  const actions = h('div.row');
+  const cancel = h('button.btn-ghost', {}, t('cancel'));
+  actions.append(cancel);
+  const dlg = h('div.overlay.connect', { role: 'dialog', 'aria-modal': 'true' }, h('div.card', { style: `--accent:${game.accent}` }, h('h2', {}, t('connectingTo', { game: game.name })), msg, actions));
+  app.append(dlg);
+
   const session = new NetSession(gameId, name, base);
-  const timeout = new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 75_000));
-  try {
-    await Promise.race([session.connected(), timeout]);
+  let done = false;
+  const finish = () => {
+    done = true;
     clearTimeout(slow);
-    startGame(gameId, session);
-  } catch {
-    clearTimeout(slow);
+    clearTimeout(giveUp);
+    dlg.remove();
+  };
+  const fail = () => {
+    if (done) return;
+    finish();
     session.dispose();
-    menu.setBusy(null);
-    menu.setStatus(t('serverDown'), 'offline');
-    menu.offerOffline(() => playOffline(gameId, name));
-  }
+    const offline = h('button.btn-play', {}, t('playOffline'));
+    offline.addEventListener('click', () => {
+      err.remove();
+      playOffline(gameId, name);
+    });
+    const close = h('button.btn-ghost', {}, t('cancel'));
+    const err = h('div.overlay.connect', { role: 'dialog' }, h('div.card', {}, h('h2', {}, t('serverDown')), offline, h('div.row', { style: 'margin-top:10px' }, close)));
+    close.addEventListener('click', () => err.remove());
+    app.append(err);
+  };
+  const slow = setTimeout(() => (msg.textContent = t('waking')), 2500);
+  const giveUp = setTimeout(fail, 75_000);
+  cancel.addEventListener('click', () => {
+    finish();
+    session.dispose();
+  });
+  session.connected().then(
+    () => {
+      if (done) return;
+      finish();
+      enterGame(gameId, session);
+    },
+    fail,
+  );
 }
 
-function showMenu(): void {
-  let menu: MenuApi;
-  const apply = (api: MenuApi) => {
-    menu = api;
-    if (lastStatus) menu.setStatus(lastStatus.text, lastStatus.kind);
-  };
-  apply(renderMenu(app, (gameId, name) => void playOnline(menu, gameId, name), apply));
-  void refreshStatus(() => menu);
+function showLanding(): void {
+  landing?.dispose();
+  landing = renderLanding(app, play, showLanding);
+  landing.setConn(conn);
+  void refreshStats();
+  clearInterval(statsTimer);
+  if (base) statsTimer = window.setInterval(() => void refreshStats(), 20_000);
 }
 
-async function refreshStatus(menu: () => MenuApi): Promise<void> {
-  const set = (text: string, kind: 'online' | 'busy' | 'offline') => {
-    lastStatus = { text, kind };
-    menu().setStatus(text, kind);
-  };
-  if (!base) return set(t('offlineMode'), 'offline');
-  set(t('connecting'), 'busy');
-  const slow = setTimeout(() => set(t('waking'), 'busy'), 2500);
+async function refreshStats(): Promise<void> {
+  if (!base) return;
+  const slow = setTimeout(() => {
+    if (conn.kind !== 'online') {
+      conn = { kind: 'busy', text: t('waking') };
+      landing?.setConn(conn);
+    }
+  }, 2500);
   const stats = await fetchStats(base);
   clearTimeout(slow);
-  if (stats) set(t('onlineCount', { n: stats.online }), 'online');
-  else set(t('serverDown'), 'offline');
+  conn = stats ? { kind: 'online', stats } : { kind: 'offline', text: t('serverDown') };
+  landing?.setConn(conn);
 }
 
-showMenu();
+// direct links: https://…/#volt opens that game straight away
+const fromHash = location.hash.slice(1);
+showLanding();
+if (playable(fromHash)) {
+  let nick = '';
+  try {
+    nick = localStorage.getItem('nick') ?? '';
+  } catch {
+    /* ignore */
+  }
+  play(fromHash, nick || `Guest${Math.floor(Math.random() * 9000 + 1000)}`);
+}

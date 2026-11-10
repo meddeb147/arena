@@ -25,6 +25,8 @@ export interface ServerStats {
   online: number;
   humans: number;
   rooms: number;
+  /** humans per game */
+  games?: Partial<Record<string, number>>;
 }
 
 /** Ask the server how many people are playing (also wakes a sleeping free-tier host). */

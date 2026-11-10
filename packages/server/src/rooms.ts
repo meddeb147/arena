@@ -91,10 +91,12 @@ export class RoomManager {
   stats() {
     let humans = 0;
     let bots = 0;
+    const games: Partial<Record<GameId, number>> = {};
     for (const s of this.slots.values()) {
       humans += s.room.humanCount;
       bots += s.room.botCount;
+      games[s.game] = (games[s.game] ?? 0) + s.room.humanCount;
     }
-    return { rooms: this.slots.size, humans, bots };
+    return { rooms: this.slots.size, humans, bots, games };
   }
 }

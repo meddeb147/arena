@@ -11,19 +11,31 @@ Real-time multiplayer arena games sharing one **play-credit** economy.
 
 ### 👉 [**https://meddeb147.github.io/arena/**](https://meddeb147.github.io/arena/)
 
-No download or sign-up: open the link, type a nickname, press **PLAY**.
+No download or sign-up: open the link, type a nickname, pick an arena. Two games are playable today, **Volt Brawl** and **Blob Stake**; the other six are on the landing page as "coming soon". Direct links open a game straight away: `…/arena/#volt`, `…/arena/#blob`.
 
 Works in any modern browser on desktop and phone. Everyone who opens the link plays in the **same arena** (the server fills each room with up to 20 players and tops it up with bots). If the game server is unreachable the page offers offline play against bots.
 
 > The game server runs on a free host that sleeps when nobody plays. The first visit after a quiet period shows "Waking up the server…" for up to a minute.
 
 ### How to play
+
+**Every game**
 - You start with **10 play credits**. Each life puts **1 credit** at stake.
 - Eat pellets to grow. Eat cells that are clearly smaller than you and you take **80% of their stake** (20% goes to the house pot).
 - **Green spike traps** pop cells bigger than them. Small cells can hide underneath.
 - **Hold cash-out for 3 seconds** to bank your stake into your wallet. You move slower and can be eaten while holding.
 - For 2.5 s after spawning you are protected (your cell blinks).
 - Out of credits? The death screen offers a free refill. They are play credits.
+
+**Volt Brawl** (neon cage brawler)
+- You jab automatically at anyone in reach. Steer to pick your fights.
+- **Volt Dash** charges forward: whoever you hit takes heavy damage and gets flung away. **Shield** blocks all damage for 1.5 s.
+- Lightning strikes are announced by a pink ring before they hit. Electric pylons zap on touch. Being slammed into the cage hurts.
+- Whoever hit you last in the past 4 seconds gets the kill and 80% of your stake, even if lightning or a pylon finished you. Otherwise the stake goes to the house pot.
+- Health orbs heal 30 HP; a KO heals 25 HP; health regenerates after 3 s without damage.
+
+**Blob Stake** (eat or be eaten)
+- Eat pellets and cells clearly smaller than you. Spike traps pop cells bigger than them.
 
 | | Desktop | Phone |
 |---|---|---|
@@ -41,8 +53,8 @@ Languages: English, Français, العربية (RTL), chosen on the menu.
 | 1 | Monorepo, shared types, engine, one room, **Blob Stake** with bots, in-browser play | ✅ done |
 | 2 | WebSocket multiplayer, matchmaking, delta snapshots, interpolation | ✅ done (client-side prediction: later) |
 | 3 | PostgreSQL ledger, accounts (email/Google/guest), leaderboards | |
-| 4 | Coil, Tank, Sumo, Blade, Bomber, Hot Potato | |
-| 5 | Landing page, HUD polish, audio, settings, full i18n | |
+| 4 | More games on the shared engine | in progress: **Volt Brawl** done; Coil, Tank, Sumo, Blade, Bomber, Hot Potato next |
+| 5 | Landing page, HUD polish, audio, settings, full i18n | landing page done (live game previews, how it works, fair play) |
 | 6 | Cosmetics, missions, prizes page, charity counter | |
 | 7 | Anti-cheat, 200-bot load tests, security review | |
 | 8 | Docker Compose + Caddy deploy, monitoring | |

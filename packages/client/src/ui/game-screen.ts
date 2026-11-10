@@ -1,5 +1,5 @@
 import { GAME_CATALOG, formatCredits, SPAWN_STAKE, TICK_MS, type GameId, type Snapshot } from '@arena/shared';
-import { RENDERERS } from '../games';
+import { CLIENT_GAMES, type ClientGame } from '../games';
 import type { GameRenderer } from '../games/renderer';
 import { Controls } from '../input/controls';
 import { SnapshotBuffer } from '../net/interp';
@@ -26,6 +26,7 @@ export class GameScreen {
   private lastStake = 0;
   private myId: number | null = null;
   private readonly accent: string;
+  private texts!: ClientGame['texts'];
 
   constructor(
     private readonly host: HTMLElement,
@@ -44,11 +45,12 @@ export class GameScreen {
 
   private async start(skillNames: [string, string]): Promise<void> {
     await this.stage.init(this.el);
-    const make = RENDERERS[this.gameId];
-    if (!make) throw new Error(`no renderer for ${this.gameId}`);
-    this.renderer = make();
+    const cg = CLIENT_GAMES[this.gameId];
+    if (!cg) throw new Error(`no renderer for ${this.gameId}`);
+    this.texts = cg.texts;
+    this.renderer = cg.make();
     this.controls = new Controls(this.el);
-    this.hud = new Hud(this.controls, skillNames);
+    this.hud = new Hud(this.controls, skillNames, cg.texts);
     this.el.append(this.hud.root);
 
     let inited = false;
@@ -111,7 +113,7 @@ export class GameScreen {
   private respawnBtn: HTMLButtonElement | null = null;
 
   private showDeath(s: Snapshot): void {
-    const title = this.killer ? t('eatenBy', { name: this.killer }) : this.deathCause === 'hazard' ? t('poppedByTrap') : t('youLost');
+    const title = this.killer ? t(this.texts.killedBy, { name: this.killer }) : this.deathCause === 'hazard' ? t(this.texts.hazard) : t('youLost');
     this.respawnBtn = h('button.btn-play', {}, t('respawn'));
     this.respawnBtn.addEventListener('click', () => this.respawn());
     this.openOverlay(
@@ -182,6 +184,7 @@ export class GameScreen {
 
   exit(): void {
     cancelAnimationFrame(this.raf);
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
     this.controls?.dispose();
     this.session.dispose();
     this.renderer?.destroy();

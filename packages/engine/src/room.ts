@@ -106,6 +106,9 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
   newId(): number {
     return ++this.idSeq;
   }
+  emit(ev: GameEvent): void {
+    this.events.push(ev);
+  }
   stakeOf(e: E): number {
     return this.ledger.balance(stakeAcc(this.roomId, e.id));
   }
@@ -457,6 +460,16 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
       this.lbCache = { tick: this.tick, rows };
     }
     return this.lbCache.rows.slice(0, n);
+  }
+
+  /** Entities around a point with no player attached (landing-page previews, spectating). */
+  snapshotAt(cx: number, cy: number) {
+    const ents = this.game.snapshot(this, null, cx, cy);
+    for (const s of ents) {
+      const e = this.ents.get(s.id);
+      if (e) s.n = e.name;
+    }
+    return ents;
   }
 
   snapshotFor(playerId: string): Snapshot | null {

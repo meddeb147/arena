@@ -1,0 +1,84 @@
+/* Landing page. Scrolls inside #app (the game screen locks the body). */
+.landing { position: absolute; inset: 0; overflow-y: auto; overflow-x: hidden; touch-action: pan-y; user-select: text; -webkit-user-select: text; scroll-behavior: smooth;
+  background:
+    radial-gradient(900px 500px at 85% -5%, rgba(225, 79, 255, 0.22), transparent 60%),
+    radial-gradient(800px 500px at -10% 30%, rgba(79, 210, 255, 0.14), transparent 60%),
+    var(--bg); }
+.l-wrap { width: min(1160px, 100%); margin: 0 auto; padding-inline: max(16px, var(--safe-left)) max(16px, var(--safe-right)); }
+
+.l-header { position: sticky; top: 0; z-index: 5; padding-top: var(--safe-top); background: rgba(23, 20, 51, 0.82); backdrop-filter: blur(10px); border-bottom: 1px solid #ffffff10; }
+.l-header-row { display: flex; align-items: center; gap: 12px; min-height: 58px; flex-wrap: wrap; }
+.l-logo { font: 400 20px var(--font-display); color: var(--text); text-decoration: none; letter-spacing: .5px;
+  background: linear-gradient(90deg, var(--pink), var(--amber)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.l-header .status { margin: 0; flex: 1; justify-content: flex-start; }
+.l-header .lang { margin: 0; }
+
+.l-hero { padding-block: 40px 28px; }
+.l-hero-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 36px; align-items: center; }
+.l-title { font: 400 clamp(34px, 6vw, 64px)/1.02 var(--font-display); margin: 0 0 16px; text-wrap: balance;
+  text-shadow: 0 0 28px rgba(255, 79, 123, 0.45), 0 4px 0 rgba(0, 0, 0, 0.35); }
+.l-lead { color: var(--muted); font-size: 18px; font-weight: 700; line-height: 1.5; max-width: 52ch; margin: 0 0 22px; }
+.l-join { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; max-width: 480px; }
+.l-join .field { margin: 0; text-align: start; }
+.l-join .btn-play { width: auto; padding-inline: 26px; }
+.l-hero .disclaimer { text-align: start; }
+.l-hero-stage { position: relative; aspect-ratio: 1 / 1; max-width: 100%; border-radius: 28px; overflow: hidden; border: 2px solid color-mix(in srgb, var(--accent) 60%, transparent);
+  box-shadow: 0 0 60px color-mix(in srgb, var(--accent) 35%, transparent), var(--shadow); background: #0f0b24; }
+.l-hero-canvas { display: block; width: 100%; height: 100%; }
+.l-hero-tag { position: absolute; inset-inline-start: 14px; bottom: 14px; font: 400 14px var(--font-display); padding: 6px 12px; border-radius: 999px; background: rgba(15, 11, 36, 0.8); color: var(--accent); }
+
+.l-section { padding-block: 34px; }
+.l-h2 { font: 400 clamp(24px, 3.4vw, 34px) var(--font-display); margin: 0 0 18px; text-wrap: balance; }
+
+.l-games { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.l-card { display: flex; flex-direction: column; background: linear-gradient(180deg, var(--panel-2), var(--panel)); border-radius: 22px; overflow: hidden;
+  border: 2px solid transparent; transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; cursor: pointer; min-width: 0; }
+.l-card:hover, .l-card:focus-visible { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 0 34px color-mix(in srgb, var(--accent) 40%, transparent); outline: none; }
+.l-card.is-soon { cursor: default; opacity: .78; }
+.l-card.is-soon:hover { transform: none; border-color: transparent; box-shadow: none; }
+.l-card-media { position: relative; aspect-ratio: 16 / 10; background: #0f0b24; }
+.l-card-canvas { display: block; width: 100%; height: 100%; }
+.l-count { position: absolute; inset-inline-end: 10px; top: 10px; font-size: 12px; font-weight: 900; color: var(--mint); background: rgba(15, 11, 36, .8); border-radius: 999px; padding: 3px 9px; }
+.l-count:empty { display: none; }
+.l-card-body { display: flex; flex-direction: column; gap: 8px; padding: 14px 16px 16px; flex: 1; }
+.l-card h3 { margin: 0; font: 400 19px var(--font-display); color: var(--accent); }
+.l-card p { margin: 0; color: var(--muted); font-weight: 700; font-size: 14px; }
+.l-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 11px; font-weight: 900; padding: 3px 8px; border-radius: 999px; background: #ffffff12; color: var(--text); }
+.chip.hz { background: color-mix(in srgb, var(--pink) 22%, transparent); color: #ffc2d2; }
+.btn-card { margin-top: auto; align-self: flex-start; border: 0; border-radius: 12px; padding: 9px 18px; font: 400 14px var(--font-display); color: #170f2e; background: var(--accent); box-shadow: 0 4px 0 rgba(0,0,0,.35); }
+.btn-card.soon { background: #ffffff14; color: var(--muted); box-shadow: none; }
+
+.l-steps { list-style: none; counter-reset: step; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.l-step { counter-increment: step; background: var(--panel); border-radius: 18px; padding: 18px; }
+.l-step::before { content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; margin-bottom: 10px;
+  font: 400 16px var(--font-display); color: var(--bg); background: var(--amber); }
+.l-step b { display: block; font-size: 17px; margin-bottom: 6px; }
+.l-step p, .l-fair-item p { margin: 0; color: var(--muted); font-weight: 700; line-height: 1.45; font-size: 14px; }
+.l-fair { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.l-fair-item { border: 2px solid #ffffff14; border-radius: 18px; padding: 18px; }
+.l-fair-item b { display: block; font-size: 17px; margin-bottom: 6px; color: var(--mint); }
+.l-fair-item.soon b { color: var(--violet); }
+
+.l-footer { padding-block: 30px calc(30px + var(--safe-bottom)); border-top: 1px solid #ffffff10; margin-top: 20px; color: var(--muted); font-weight: 700; font-size: 14px; }
+.l-footer p { margin: 0 0 8px; }
+.l-footer .disclaimer { color: var(--text); }
+.l-footer a { color: var(--sky); }
+
+.overlay.connect { position: absolute; z-index: 20; }
+.overlay.connect .card h2 { color: var(--accent); }
+.overlay.connect .btn-play { margin-top: 4px; }
+
+@media (max-width: 860px) {
+  .l-hero-grid { grid-template-columns: minmax(0, 1fr); }
+  .l-hero-stage { aspect-ratio: 4 / 3; }
+  .l-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .l-fair { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 480px) {
+  .l-hero { padding-top: 22px; }
+  .l-join { grid-template-columns: minmax(0, 1fr); }
+  .l-join .btn-play { width: 100%; }
+  .l-steps { grid-template-columns: minmax(0, 1fr); }
+  .l-header .status { order: 3; flex-basis: 100%; padding-bottom: 8px; }
+}

@@ -1,4 +1,4 @@
-export type GameId = 'coil' | 'blob' | 'tank' | 'sumo' | 'blade' | 'bomber' | 'potato';
+export type GameId = 'coil' | 'blob' | 'volt' | 'tank' | 'sumo' | 'blade' | 'bomber' | 'potato';
 
 /** What a client is allowed to send each tick. Everything else is decided by the server. */
 export interface PlayerInput {
@@ -32,6 +32,8 @@ export const EntFlag = {
   Magnet: 1 << 5,
   You: 1 << 6,
   Protected: 1 << 7,
+  /** mid-attack animation (punch, swing…) */
+  Attack: 1 << 8,
 } as const;
 
 /**
@@ -54,8 +56,10 @@ export interface EntitySnap {
   s?: number;
   /** EntFlag bitmask */
   f?: number;
-  /** cash-out progress 0..1 (players only, when holding) */
+  /** cash-out progress 0..1 for players; game-defined progress for other kinds (e.g. a charging hazard) */
   p?: number;
+  /** health 0..1 (games with health bars) */
+  h?: number;
 }
 
 export type DeathCause = 'player' | 'hazard' | 'self' | 'disconnect';
@@ -64,7 +68,9 @@ export type GameEvent =
   | { t: 'kill'; killerId: number | null; killerName: string | null; victimId: number; victimName: string; amount: number; houseCut: number; cause: DeathCause; x: number; y: number }
   | { t: 'cashout'; id: number; name: string; amount: number; x: number; y: number }
   | { t: 'skill'; id: number; slot: 0 | 1; x: number; y: number }
-  | { t: 'spawn'; id: number; name: string; x: number; y: number };
+  | { t: 'spawn'; id: number; name: string; x: number; y: number }
+  /** game-specific visual/sound cue (hit spark, lightning bolt…); never affects state */
+  | { t: 'fx'; kind: string; x: number; y: number; id?: number; v?: number };
 
 export interface LeaderboardRow {
   id: number;

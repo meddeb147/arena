@@ -1,6 +1,7 @@
 import { formatCredits, PLAY_CREDITS_DISCLAIMER, type GameEvent, type Snapshot } from '@arena/shared';
 import { t } from '../i18n';
 import type { Controls } from '../input/controls';
+import type { ClientGame } from '../games';
 import { h } from './dom';
 
 /** DOM heads-up display. Updates are diffed to avoid layout thrash at 60 FPS. */
@@ -17,7 +18,7 @@ export class Hud {
   private last = { wallet: -1, stake: -1, kills: -1, lb: '' };
   private readyPrev: [boolean, boolean] = [true, true];
 
-  constructor(controls: Controls, skillNames: [string, string]) {
+  constructor(controls: Controls, skillNames: [string, string], private readonly texts: ClientGame['texts']) {
     const row = (label: string, val: HTMLElement, cls = '') => h(`div.row${cls}`, {}, h('span', {}, label), val);
     this.root.append(
       h('div.hud-wallet.panel', {}, row(t('stake'), this.stake, '.stake'), row(t('wallet'), this.wallet), row(t('kills'), this.kills)),
@@ -99,7 +100,7 @@ export class Hud {
   private pushFeed(ev: GameEvent): void {
     let el: HTMLElement | null = null;
     if (ev.t === 'kill') {
-      const text = ev.killerName ? t('killFeed', { killer: ev.killerName, victim: ev.victimName }) : t('trapFeed', { victim: ev.victimName });
+      const text = ev.killerName ? t(this.texts.feedKill, { killer: ev.killerName, victim: ev.victimName }) : t(this.texts.feedHazard, { victim: ev.victimName });
       el = h('div.panel', {}, h('span.k', {}, '☠ '), text, ev.amount ? h('span.amt', {}, ` +${formatCredits(ev.amount)}`) : '');
     } else if (ev.t === 'cashout') {
       el = h('div.panel', {}, '💰 ', t('cashFeed', { name: ev.name }), h('span.amt', {}, ` ${formatCredits(ev.amount)}`));
