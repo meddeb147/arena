@@ -11,9 +11,11 @@
   },
   "dependencies": {
     "@arena/engine": "0.1.0",
-    "@arena/shared": "0.1.0"
+    "@arena/shared": "0.1.0",
+    "ws": "^8.22.2",
+    "tsx": "^4.20.0"
   },
   "devDependencies": {
-    "tsx": "^4.20.0"
+    "@types/ws": "^8.18.2"
   }
 }

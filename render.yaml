@@ -1,0 +1,14 @@
+# One-click deploy on Render (free plan): https://render.com/deploy?repo=https://github.com/meddeb147/arena
+# One web service runs the authoritative game server AND serves the game page.
+services:
+  - type: web
+    name: stake-arena
+    runtime: node
+    plan: free
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

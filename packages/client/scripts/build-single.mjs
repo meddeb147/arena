@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const outDir = join(root, 'dist-single');
+process.env.VITE_SERVER_URL = 'offline'; // the single file is a self-contained offline build
 await build({
   root,
   logLevel: 'warn',

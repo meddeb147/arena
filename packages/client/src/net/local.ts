@@ -1,12 +1,15 @@
 import { GAMES, MINT, MemoryLedger, Room, walletAcc } from '@arena/engine';
 import { CREDIT, SPAWN_STAKE, TICK_MS, type GameId, type PlayerInput } from '@arena/shared';
-import type { GameSession } from './session';
+import type { GameSession, SessionStatus } from './session';
 
 const PLAYER = 'local';
 
 /** Runs an authoritative room in the browser at a fixed 30 Hz. */
 export class LocalSession implements GameSession {
   onSnapshot: GameSession['onSnapshot'] = null;
+  onStatus: GameSession['onStatus'] = null;
+  readonly interpDelayMs = TICK_MS * 1.2;
+  status: SessionStatus = 'offline';
   private readonly room: Room;
   private readonly ledger = new MemoryLedger();
   private last = -1;

@@ -4,3 +4,4 @@ export * from './economy';
 export * from './math';
 export * from './types';
 export * from './games';
+export * from './protocol';

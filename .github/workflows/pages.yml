@@ -35,6 +35,9 @@ jobs:
         run: npm run build
         env:
           BASE_PATH: /${{ github.event.repository.name }}/
+          # URL of the deployed game server (repo Settings -> Secrets and variables -> Actions -> Variables).
+          # Empty = the Pages build plays offline against bots.
+          VITE_SERVER_URL: ${{ vars.GAME_SERVER_URL }}
       - name: Prepare static site
         run: |
           cd packages/client/dist

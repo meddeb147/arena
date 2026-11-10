@@ -13,7 +13,9 @@ Real-time multiplayer arena games sharing one **play-credit** economy.
 
 No download or sign-up: open the link, type a nickname, press **PLAY**.
 
-Works in any modern browser on desktop and phone. The current build is **Blob Stake** against bots; the game runs entirely in your browser (online multiplayer arrives in step 2).
+Works in any modern browser on desktop and phone. Everyone who opens the link plays in the **same arena** (the server fills each room with up to 20 players and tops it up with bots). If the game server is unreachable the page offers offline play against bots.
+
+> The game server runs on a free host that sleeps when nobody plays. The first visit after a quiet period shows "Waking up the server…" for up to a minute.
 
 ### How to play
 - You start with **10 play credits**. Each life puts **1 credit** at stake.
@@ -37,7 +39,7 @@ Languages: English, Français, العربية (RTL), chosen on the menu.
 | Step | Scope | State |
 |---|---|---|
 | 1 | Monorepo, shared types, engine, one room, **Blob Stake** with bots, in-browser play | ✅ done |
-| 2 | WebSocket multiplayer, matchmaking, interpolation/prediction | next |
+| 2 | WebSocket multiplayer, matchmaking, delta snapshots, interpolation | ✅ done (client-side prediction: later) |
 | 3 | PostgreSQL ledger, accounts (email/Google/guest), leaderboards | |
 | 4 | Coil, Tank, Sumo, Blade, Bomber, Hot Potato | |
 | 5 | Landing page, HUD polish, audio, settings, full i18n | |
@@ -54,11 +56,11 @@ npm install
 ```
 
 ```bash
-npm run dev            # client on http://localhost:5173 (step 1: engine runs in the browser)
+npm run dev            # game server (:8080) + client (http://localhost:5173), open it in two tabs to play together
 ```
 
 ```bash
-npm run dev:server     # authoritative server with a bot-filled room, GET :8080/health
+npm run build && npm start   # production: one server on :8080 serves the page, the websocket and /health
 ```
 
 ```bash
@@ -70,10 +72,10 @@ npm run bench -- 10    # 10 rooms x 20 bots, reports CPU per 30 Hz tick
 ```
 
 ```bash
-npm run build:single -w @arena/client   # the whole game as one self-contained HTML file
+npm run build:single -w @arena/client   # the whole game as one self-contained offline HTML file
 ```
 
-`docker compose up` arrives in step 8.
+Add `?server=offline` to the page URL to force offline play, or `?server=https://your-server` to point the page at another game server. `docker compose up` (with PostgreSQL and Redis) arrives in step 8; a single-container `Dockerfile` is already included.
 
 ### Controls
 Mouse steers (distance from centre = throttle) or WASD/arrows · **Space** Dash · **E/Shift** Shield · hold **Q** to cash out.
@@ -85,7 +87,7 @@ On touch: a floating joystick appears wherever your thumb lands; big Dash/Shield
 packages/
   shared/   constants, protocol types, economy math, feature flags, game catalog (pure TS)
   engine/   Room, GameModule API, ledger, spatial grid, bots; games/<id>/ (pure TS, server + browser)
-  server/   Node: fixed 30 Hz loop, rooms (+ WebSocket gateway in step 2)
+  server/   Node: fixed 30 Hz loop, room manager (matchmaking), WebSocket gateway, static file server
   client/   Vite + PixiJS renderer, HUD, input, i18n (en/fr/ar)
 ```
 
@@ -107,6 +109,20 @@ All amounts are integer units (`1 credit = 100 units`). The ledger is double-ent
 5. Add tests – copy the conservation fuzz test with your module.
 
 ## Deployment
+
+### Multiplayer server (free, one click)
+
+Everyone must connect to one game server to share a room. The repo includes `render.yaml`, so:
+
+1. Open **https://render.com/deploy?repo=https://github.com/meddeb147/arena** and sign in (GitHub login is fine, the free plan needs no card).
+2. Click **Apply / Deploy**. After the build (~3 min) Render gives a URL like `https://stake-arena.onrender.com`. **That URL is the game**: share it, everyone lands in the same room.
+3. Optional, so the GitHub Pages link plays online too: repo **Settings → Secrets and variables → Actions → Variables → New repository variable** `GAME_SERVER_URL` = your Render URL, then re-run the "Deploy game to GitHub Pages" workflow.
+
+Every push redeploys the server automatically. Free Render services sleep after 15 minutes without visitors and wake on the next visit (up to a minute). The `Dockerfile` runs the same server on any container host (Fly.io, Railway, Koyeb, a VPS).
+
+Protocol: JSON over WebSocket at `/ws`. Clients send only inputs (`hello`, `in`, `spawn`, `refill`); the server simulates at 30 Hz and sends each player a 15 Hz **delta snapshot** (only entities that changed in their view, plus removed ids). Messages are size-capped and rate-limited; a second tab with the same guest id replaces the first; a disconnected player's live entity auto-cashes-out.
+
+### Static play link
 
 **Play link (GitHub Pages).** `.github/workflows/pages.yml` builds the client on every push to `main` or the development branch and publishes it to the `gh-pages` branch (and via GitHub Actions deployment). One-time setup: repo **Settings → Pages → Build and deployment → Source: Deploy from a branch → Branch: `gh-pages`, folder `/ (root)` → Save**. The game appears at [meddeb147.github.io/arena](https://meddeb147.github.io/arena/) about a minute later.
 

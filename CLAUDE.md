@@ -22,8 +22,9 @@
 - `packages/engine` – pure TS simulation, runs on server **and** in the browser (offline/previews). Server is authoritative; clients only send `PlayerInput`.
   - `Room` owns players, bots, ledger, skills/cooldowns, cash-out, respawn, spawn protection, snapshots.
   - `GameModule` (src/types.ts) owns physics, collisions, hazards, kills, bot steering and snapshot content.
-- `packages/server` – Node: fixed 30 Hz loop (`FixedLoop`), rooms; WebSocket gateway from step 2.
-- `packages/client` – Vite + PixiJS (WebGL, Canvas fallback). `GameSession` abstracts local vs network play.
+- `packages/server` – Node: fixed 30 Hz loop (`FixedLoop`), `RoomManager` (fullest room with space), `Gateway` (WebSocket `/ws`, validation, rate limits, delta snapshots), static file server for the built client. Protocol types live in `shared/src/protocol.ts`.
+- `packages/client` – Vite + PixiJS (WebGL, Canvas fallback). `GameSession` abstracts local (`LocalSession`) vs network (`NetSession`) play; `net/server.ts` decides which server to use.
+- Deploy: `render.yaml` (free one-click), `Dockerfile`, GitHub Pages workflow (static client, `GAME_SERVER_URL` repo variable points it at the server).
 
 ## Coding rules
 - Simulation code uses `sim.rng` (seeded `Rng`), never `Math.random` / `Date.now` — rooms must be deterministic per seed.
@@ -41,4 +42,5 @@
 
 ## Workflow
 - Small steps; run and test after each. Build order lives in README "Roadmap".
-- Commands: `npm run dev` (client), `npm run dev:server`, `npm test`, `npm run typecheck`, `npm run bench -- <rooms>`.
+- Commands: `npm run dev` (server + client), `npm start` (production server), `npm test`, `npm run typecheck`, `npm run bench -- <rooms>`.
+- Never close a room or drop a player without settling stakes through the ledger (`Room.close()`, `removePlayer` auto-cash-out).

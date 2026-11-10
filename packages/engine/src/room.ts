@@ -419,6 +419,32 @@ export class Room<E extends BaseEntity = BaseEntity, S = unknown, B = unknown> i
     return undefined;
   }
 
+  /** True when nobody (and no disconnected player's entity) is left in the room. */
+  get isIdle(): boolean {
+    return this.humans.size === 0 && this.orphans.size === 0;
+  }
+
+  /**
+   * Shut the room down without creating or losing credits: bots' stakes go back
+   * to the house, any remaining player entity is cashed out to its owner.
+   */
+  close(): void {
+    for (const e of this.ents.values()) {
+      if (!e.alive) continue;
+      const acc = stakeAcc(this.roomId, e.id);
+      const st = this.ledger.balance(acc);
+      if (st > 0) {
+        if (e.isBot) this.ledger.transfer(acc, HOUSE, st, 'bot_refund', this.tick, 'room_close');
+        else this.ledger.transfer(acc, walletAcc(e.ownerId), st, 'cashout', this.tick, 'room_close');
+      }
+      e.alive = false;
+    }
+    this.ents.clear();
+    this.orphans.clear();
+    this.humans.clear();
+    this.bots.clear();
+  }
+
   // ---- Views ---------------------------------------------------------------
 
   leaderboard(n = 5): LeaderboardRow[] {

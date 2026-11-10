@@ -6,7 +6,7 @@ import { TICK_MS, lerp, lerpAngle, type EntitySnap, type Snapshot } from '@arena
  */
 export class SnapshotBuffer {
   private buf: { at: number; snap: Snapshot }[] = [];
-  constructor(private readonly delayMs = TICK_MS * 1.2) {}
+  constructor(public delayMs = TICK_MS * 1.2) {}
 
   push(snap: Snapshot, at: number): void {
     this.buf.push({ at, snap });

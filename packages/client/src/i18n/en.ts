@@ -24,6 +24,14 @@ export const en = {
   trapFeed: '{victim} hit a trap',
   cashFeed: '{name} cashed out',
   blobTagline: 'Eat or be eaten.',
+  connecting: 'Connecting…',
+  waking: 'Waking up the server… this can take up to a minute',
+  onlineCount: '{n} playing online now',
+  offlineMode: 'Offline mode: you play against bots',
+  serverDown: 'Can’t reach the game server',
+  playOffline: 'Play offline vs bots',
+  disconnected: 'Connection lost',
+  disconnectedHint: 'If you were alive, your stake is being cashed out automatically.',
   keysHelp: 'Mouse to steer · {dash} Dash · {shield} Shield · hold {cash} to cash out',
 } as const;
 

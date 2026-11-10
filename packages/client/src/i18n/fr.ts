@@ -26,5 +26,13 @@ export const fr: Dict = {
   trapFeed: '{victim} a touché un piège',
   cashFeed: '{name} a encaissé',
   blobTagline: 'Manger ou être mangé.',
+  connecting: 'Connexion…',
+  waking: 'Réveil du serveur… cela peut prendre une minute',
+  onlineCount: '{n} joueurs en ligne',
+  offlineMode: 'Mode hors ligne : vous jouez contre des bots',
+  serverDown: 'Serveur de jeu injoignable',
+  playOffline: 'Jouer hors ligne contre des bots',
+  disconnected: 'Connexion perdue',
+  disconnectedHint: 'Si vous étiez en vie, votre mise est encaissée automatiquement.',
   keysHelp: 'Souris pour diriger · {dash} Sprint · {shield} Bouclier · maintenir {cash} pour encaisser',
 };

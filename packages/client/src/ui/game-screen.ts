@@ -37,6 +37,7 @@ export class GameScreen {
     this.accent = meta.accent;
     this.el.style.setProperty('--accent', meta.accent);
     host.replaceChildren(this.el);
+    this.buffer.delayMs = session.interpDelayMs;
     this.hud = null as unknown as Hud;
     void this.start(meta.skills.map((s) => s.name) as [string, string]);
   }
@@ -60,6 +61,9 @@ export class GameScreen {
       this.renderer.onSnapshot(snap);
       this.trackDeath(snap);
       this.hud.update(snap);
+    };
+    this.session.onStatus = (s) => {
+      if (s === 'closed') this.showDisconnected();
     };
     this.session.requestSpawn();
     this.lastFrame = performance.now();
@@ -144,6 +148,13 @@ export class GameScreen {
     const again = h('button.btn-play', {}, t('playAgain'));
     again.addEventListener('click', () => this.respawn());
     this.openOverlay(h('h2', {}, t('cashedOut')), h('p', {}, t('addedToWallet')), h('div.big', {}, `+${formatCredits(this.lastStake)}`), again, h('div.row', { style: 'margin-top:10px' }, this.menuButton()));
+  }
+
+  private showDisconnected(): void {
+    const back = h('button.btn-play', {}, t('menu'));
+    back.addEventListener('click', () => this.exit());
+    this.openOverlay(h('h2', {}, t('disconnected')), h('p', {}, t('disconnectedHint')), back);
+    this.lastState = null;
   }
 
   private menuButton(): HTMLButtonElement {

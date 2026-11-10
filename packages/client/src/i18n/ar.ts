@@ -26,5 +26,13 @@ export const ar: Dict = {
   trapFeed: '{victim} اصطدم بفخ',
   cashFeed: '{name} سحب رصيده',
   blobTagline: 'كُل أو تُؤكل.',
+  connecting: 'جارٍ الاتصال…',
+  waking: 'جارٍ تشغيل الخادم… قد يستغرق ذلك دقيقة',
+  onlineCount: '{n} يلعبون الآن',
+  offlineMode: 'وضع عدم الاتصال: تلعب ضد الروبوتات',
+  serverDown: 'تعذر الوصول إلى خادم اللعبة',
+  playOffline: 'العب دون اتصال ضد الروبوتات',
+  disconnected: 'انقطع الاتصال',
+  disconnectedHint: 'إذا كنت حياً، يتم سحب رهانك تلقائياً.',
   keysHelp: 'الفأرة للتوجيه · {dash} اندفاع · {shield} درع · اضغط مطولاً {cash} للسحب',
 };

@@ -142,6 +142,20 @@ describe('Room + Blob Stake', () => {
     expect(room.entities.size).toBe(0);
   });
 
+  it('closing a room returns every stake without creating credits', () => {
+    const { room, ledger } = makeRoom(11, { target: 16 });
+    room.addPlayer('p1', 'Alice');
+    grant(ledger, 'p1', 300);
+    room.spawn('p1');
+    for (let i = 0; i < 200; i++) room.step();
+    const before = ledger.balance(walletAcc('p1'));
+    const alive = room.snapshotFor('p1')!.you.stake;
+    room.close();
+    expect(ledger.balance(walletAcc('p1'))).toBe(before + alive);
+    for (const [acc, v] of ledger.balances()) if (acc.startsWith('stake:')) expect(v).toBe(0);
+    expect([...ledger.balances().values()].reduce((a, b) => a + b, 0)).toBe(0);
+  });
+
   it('is deterministic for a given seed', () => {
     const run = () => {
       const { room } = makeRoom(99);

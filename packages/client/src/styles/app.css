@@ -105,3 +105,13 @@ button { font-family: inherit; color: inherit; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* ---------- connection status ---------- */
+.status { margin: -6px 0 16px; font-size: 13px; font-weight: 800; color: var(--muted); display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 18px; }
+.status:empty { visibility: hidden; }
+.status::before { content: ''; width: 9px; height: 9px; border-radius: 50%; background: var(--muted); flex: none; }
+.status[data-kind='online'] { color: var(--mint); }
+.status[data-kind='online']::before { background: var(--mint); box-shadow: 0 0 10px var(--mint); animation: live 1.6s ease-in-out infinite; }
+.status[data-kind='busy']::before { background: var(--amber); animation: live .8s ease-in-out infinite; }
+.status[data-kind='offline']::before { background: var(--pink); }
+@keyframes live { 50% { opacity: .35; } }
